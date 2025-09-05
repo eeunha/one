@@ -18,4 +18,8 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    port: 8086, // 여기서 원하는 포트로 변경
+    strictPort: true, // 포트가 이미 사용 중이면 바로 에러
+  },
 })

@@ -28,3 +28,13 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+*.iml
+.idea/
+.vscode/
