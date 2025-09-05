@@ -1,6 +1,7 @@
 <script setup>
 
 import UserTest from "@/components/UserTest.vue";
+import MyCalendar from "@/components/MyCalendar.vue";
 </script>
 
 <template>
@@ -9,6 +10,8 @@ import UserTest from "@/components/UserTest.vue";
       Hello world!
     </h1>
     <UserTest />
+
+    <MyCalendar />
   </div>
 </template>
 
