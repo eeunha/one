@@ -46,4 +46,7 @@ out/
 .DS_Store
 
 ### DB 인증 정보 ###
-/src/main/resources/application.yml
+src/main/resources/application.yml
+
+# OAuth 민감 정보
+src/main/resources/application-oauth.yml
