@@ -1,18 +1,23 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.LoginResponseDto;
-import com.example.backend.dto.SnsLoginRequestDto;
-import com.example.backend.dto.UserDTO;
 import com.example.backend.service.UserService;
 import com.example.backend.util.JwtUtil;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -35,7 +40,7 @@ public class OAuthController {
     }
 
     @GetMapping("/callback/google")
-    public LoginResponseDto googleCallback(@RequestParam("code") String code) {
+    public void googleCallback(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
 
         // 1. code -> access token 교환
         RestTemplate restTemplate = new RestTemplate();
@@ -48,12 +53,12 @@ public class OAuthController {
         params.add("redirect_uri", redirectUri);
         params.add("grant_type", "authorization_code");
 
-        ResponseEntity<Map> tokenResponse = restTemplate.postForEntity(tokenUrl, params, Map.class);
-        String accessToken = (String) tokenResponse.getBody().get("access_token");
+        Map<String, String> tokenResponse = restTemplate.postForObject(tokenUrl, params, Map.class);
+        String accessTokenFromGoogle = tokenResponse.get("access_token");
 
-        // 2. access_token -> 사용자 정보 요청
+        // 2. access_token -> Google API로 사용자 정보 가져오기
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
+        headers.add("Authorization", "Bearer " + accessTokenFromGoogle);
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         ResponseEntity<Map> userInfoResponse  = restTemplate.exchange(
@@ -63,10 +68,22 @@ public class OAuthController {
                 Map.class
         );
 
-        String email = (String) userInfoResponse.getBody().get("email");
-        String name = (String) userInfoResponse.getBody().get("name");
+        Map<String, Object> userInfo = userInfoResponse.getBody();
+        String email = (String) userInfo.get("email");
+        String name = (String) userInfo.get("name");
 
-        // 3. User DB 저장 및 JWT 발급
-        return userService.processGoogleLogin(email, name);
+        // 3. UserService 호출 (JWT 발급)
+        String jwtToken = userService.processGoogleLogin(email, name);
+
+        // 4. JWT를 쿠키로 브라우저에 전달
+        Cookie cookie = new Cookie("accessToken", jwtToken);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false); // 로컬 개발 시 false, 배포 시 true
+        cookie.setPath("/");
+        cookie.setMaxAge(7 * 24 * 60 * 60); // 7일
+        response.addCookie(cookie);
+
+        // 5. 프론트 페이지로 리다이렉트
+        response.sendRedirect("http://localhost:8086/profile");
     }
 }

@@ -1,39 +1,41 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-const name = ref('')
-const email = ref('')
+const name = ref('');
+const email = ref('');
+const loading = ref(true);
 
 onMounted(async () => {
   try {
-    const token = localStorage.getItem('accessToken')
-    if (!token) {
-      alert('No access token, please login')
-      return
-    }
-
+    // 쿠키는 자동 포함되므로 Authorization 헤더 없이 요청 가능
     const res = await axios.get('http://localhost:8085/auth/profile', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    name.value = res.data.name
-    email.value = res.data.email
+      withCredentials: true
+    });
+    name.value = res.data.name;
+    email.value = res.data.email;
   } catch (err) {
-    console.error(err)
-    alert('Failed to fetch profile')
+    console.error('사용자 정보를 가져오는 데 실패했습니다.', err);
+  } finally {
+    loading.value = false;
   }
-})
+});
 </script>
 
 <template>
   <div>
     <h2>Profile</h2>
-    <p>Name: {{ name }}</p>
-    <p>Email: {{ email }}</p>
+    <div v-if="loading">Loading...</div>
+    <div v-else>
+      <p>Name: {{ name }}</p>
+      <p>Email: {{ email }}</p>
+    </div>
   </div>
 </template>
 
 <style scoped>
-
+p {
+  margin: 8px 0;
+  font-size: 16px;
+}
 </style>

@@ -1,14 +1,11 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.LoginResponseDto;
-import com.example.backend.dto.UserDTO;
 import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.util.JwtUtil;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -22,8 +19,8 @@ public class UserService {
         this.jwtUtil = jwtUtil;
     }
 
-    // 구글 code 처리
-    public LoginResponseDto processGoogleLogin(String email, String name) {
+    // 구글 로그인 처리: email, name을 받아 사용자 생성 또는 조회 후 JWT 발급
+    public String processGoogleLogin(String email, String name) {
 
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
@@ -34,14 +31,17 @@ public class UserService {
                     return userRepository.save(newUser);
                 });
 
-        // Access, Refresh Token 생성
+        // JWT 토큰 생성 (Access Token)
         String accessToken = jwtUtil.generateToken(email);
+
+        // Refresh Token 생성 및 DB 저장
         String refreshToken = UUID.randomUUID().toString();
         user.setRefreshToken(refreshToken);
         user.setRefreshTokenExpiry(LocalDateTime.now().plusWeeks(2));
         userRepository.save(user);
 
-        return new LoginResponseDto(user.getName(), user.getEmail(), accessToken);
+        // 쿠키를 통해 컨트롤러에서 브라우저에 전달
+        return accessToken;
     }
 
     public User getUserByEmail(String email) {
