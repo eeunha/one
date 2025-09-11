@@ -1,10 +1,8 @@
 package com.example.backend.controller;
 
-import com.example.backend.entity.User;
 import com.example.backend.service.UserService;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/users")
@@ -16,13 +14,13 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
-    }
-
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
-    }
+//    @PostMapping
+//    public User createUser(@RequestBody User user) {
+//        return userService.createUser(user);
+//    }
+//
+//    @GetMapping
+//    public List<User> getAllUsers() {
+//        return userService.getAllUsers();
+//    }
 }
