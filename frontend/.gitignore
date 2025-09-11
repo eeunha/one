@@ -38,3 +38,5 @@ coverage
 *.iml
 .idea/
 .vscode/
+
+/src/assets/images/

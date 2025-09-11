@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import TestView from '../views/TestView.vue'
-import SnsLoginView from "@/views/SnsLoginView.vue";
+import LoginView from "@/views/LoginView.vue";
 import ProfileView from "@/views/ProfileView.vue";
 
 
@@ -27,9 +27,9 @@ const router = createRouter({
       component: TestView,
     },
     {
-      path: '/sns',
-      name: 'sns',
-      component: SnsLoginView,
+      path: '/login',
+      name: 'login',
+      component: LoginView,
     },
     {
       path: '/profile',
