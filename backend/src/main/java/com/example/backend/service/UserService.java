@@ -32,7 +32,7 @@ public class UserService {
                 });
 
         // JWT 토큰 생성 (Access Token)
-        String accessToken = jwtUtil.generateToken(email);
+        String accessToken = jwtUtil.generateToken(email, name);
 
         // Refresh Token 생성 및 DB 저장
         String refreshToken = UUID.randomUUID().toString();

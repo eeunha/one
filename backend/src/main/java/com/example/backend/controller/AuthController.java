@@ -2,9 +2,11 @@ package com.example.backend.controller;
 
 import com.example.backend.entity.User;
 import com.example.backend.service.UserService;
+import com.example.backend.util.JwtUtil;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys; // 추가된 import
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.SecretKey; // 추가된 import
@@ -17,26 +19,24 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService userService;
-    private final SecretKey secretKey; // String 대신 SecretKey 타입으로 변경
+    private final JwtUtil jwtUtil; // ★ JwtUtil 주입
 
-    // 생성자에서 SecretKey 객체를 한 번만 생성하여 재사용 (Best Practice)
-    public AuthController(UserService userService, @Value("${jwt.secret}") String secret) {
+    public AuthController(UserService userService, JwtUtil jwtUtil) { // ★ 생성자 수정
         this.userService = userService;
-        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.jwtUtil = jwtUtil;
     }
 
-    // 예: JWT Access Token으로 사용자 프로필 조회
+    // JWT Access Token으로 사용자 프로필 조회
     @GetMapping("/profile")
     public Map<String, String> getProfile(@CookieValue("accessToken") String token) {
 
-        // 쿠키에서 JWT 읽기 (수정된 부분)
-        String email = Jwts.parserBuilder()
-                .setSigningKey(this.secretKey) // 생성자에서 만든 SecretKey 사용
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        // ★ JWT 검증 및 정보 추출 로직을 JwtUtil에 위임
+        if (!jwtUtil.validateToken(token)) {
+            // 토큰이 유효하지 않으면 JWTException을 발생시킵니다.
+            throw new JwtException("Invalid or expired JWT token.");
+        }
 
+        String email = jwtUtil.getEmailFromToken(token);
         User user = userService.getUserByEmail(email);
 
         Map<String, String> profile = new HashMap<>();
