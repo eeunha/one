@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
 
+// 로그인 인증 과정을 시작하고 완료
+// (최초 인증에 집중)
 @Controller
 @RequestMapping("/oauth")
 public class OAuthController {
@@ -32,6 +34,6 @@ public class OAuthController {
         cookieUtil.addJwtCookie(httpServletResponse, jwtToken);
 
         // 3. 프론트 페이지로 리다이렉트
-        return "redirect:http://localhost:8086/profile";
+        return "redirect:http://localhost:8086/oauth2/redirect";
     }
 }
