@@ -1,5 +1,6 @@
 package com.example.backend.config;
 
+import com.example.backend.dto.JwtAndProfileResponseDTO;
 import com.example.backend.service.UserService;
 import com.example.backend.util.CookieUtil;
 import jakarta.servlet.http.Cookie;
@@ -57,10 +58,18 @@ public class SecurityConfig {
             OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
             String email = oAuth2User.getAttribute("email");
             String name = oAuth2User.getAttribute("name");
-            String jwtToken = userService.processGoogleLogin(email, name);
 
-            // ★ 한 줄로 변경하여 쿠키 생성 로직 호출
-            cookieUtil.addJwtCookie(response, jwtToken);
+            // 1. UserService를 호출하여 JwtAndProfileResponse 객체를 받음
+            JwtAndProfileResponseDTO jwtAndProfileResponse = userService.processGoogleLogin(email, name);
+
+            String accessToken = jwtAndProfileResponse.getAccessToken();
+            String refreshToken = jwtAndProfileResponse.getRefreshToken();
+
+            // 2. 두 개의 토큰을 쿠키에 담는 새로운 메서드를 호출
+            cookieUtil.addJwtCookies(response, accessToken, refreshToken);
+
+            // 3. (선택사항) 프로필 정보를 세션에 저장하거나 리다이렉트 시 쿼리 파라미터로 추가
+            // 현재는 쿠키만 추가하고 리다이렉트하는 방식이므로 추가적인 로직은 필요 없습니다.
 
             response.sendRedirect("http://localhost:8086/profile");
         };

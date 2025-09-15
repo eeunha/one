@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.example.backend.dto.JwtAndProfileResponseDTO;
 import com.example.backend.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -24,15 +25,16 @@ public class OAuthService {
     @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
     private String redirectUri;
 
-    private final UserService userService;
     private final WebClient webClient;
+    private final UserService userService;
 
     public OAuthService(UserService userService, WebClient.Builder webClientBuilder) {
-        this.userService = userService;
         this.webClient = webClientBuilder.build();
+        this.userService = userService;
     }
 
-    public String getJwtTokenFromGoogleAuth(String code) {
+    // 반환 타입을 Map<String, String>으로 변경
+    public JwtAndProfileResponseDTO getJwtAndProfileResponse(String code) {
         // 1. code -> access token 교환 (WebClient 사용)
         String tokenUrl = "https://oauth2.googleapis.com/token";
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -64,7 +66,7 @@ public class OAuthService {
         String email = (String) userInfo.get("email");
         String name = (String) userInfo.get("name");
 
-        // 3. UserService를 호출하여 JWT 발급 및 반환
+        // 3. UserService를 호출하여 두 개의 JWT 토큰을 Map 형태로 받아서 반환
         return userService.processGoogleLogin(email, name);
     }
 }

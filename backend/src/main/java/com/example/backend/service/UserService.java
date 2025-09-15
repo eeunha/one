@@ -1,12 +1,12 @@
 package com.example.backend.service;
 
+import com.example.backend.dto.JwtAndProfileResponseDTO;
 import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.util.JwtUtil;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 public class UserService {
@@ -20,7 +20,7 @@ public class UserService {
     }
 
     // 구글 로그인 처리: email, name을 받아 사용자 생성 또는 조회 후 JWT 발급
-    public String processGoogleLogin(String email, String name) {
+    public JwtAndProfileResponseDTO processGoogleLogin(String email, String name) {
 
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
@@ -31,17 +31,26 @@ public class UserService {
                     return userRepository.save(newUser);
                 });
 
-        // JWT 토큰 생성 (Access Token)
-        String accessToken = jwtUtil.generateToken(email, name);
+        // 1. JWT 토큰 생성 (Access Token & Refresh Token)
+        // JWT에 사용자 ID만 담도록 수정
+        String accessToken = jwtUtil.generateAccessToken(user.getId());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getId());
 
-        // Refresh Token 생성 및 DB 저장
-        String refreshToken = UUID.randomUUID().toString();
+        // Refresh Token DB 저장
         user.setRefreshToken(refreshToken);
         user.setRefreshTokenExpiry(LocalDateTime.now().plusWeeks(2));
         userRepository.save(user);
 
+        // 3. 토큰과 프로필 정보를 DTO에 담아서 반환
+        JwtAndProfileResponseDTO response = new JwtAndProfileResponseDTO();
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshToken);
+        response.setId(user.getId());
+        response.setEmail(user.getEmail());
+        response.setName(user.getName());
+
         // 쿠키를 통해 컨트롤러에서 브라우저에 전달
-        return accessToken;
+        return response;
     }
 
     public User getUserByEmail(String email) {
