@@ -1,6 +1,5 @@
 package com.example.backend.util;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
@@ -9,28 +8,30 @@ import org.springframework.stereotype.Component;
 @Component
 public class CookieUtil {
 
-    public void addJwtCookies(HttpServletResponse response, String accessToken, String refreshToken) {
-        // Access Token
-        ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
-                .httpOnly(true)        // JS에서 접근 불가
-//                .secure(true)          // HTTPS에서만 전송
+    @Value("${app.cookie.secure}")
+    private boolean secure;
+
+    /**
+     * JWT 토큰을 HttpOnly 쿠키에 추가합니다.
+     *
+     * @param response      HttpServletResponse
+     * @param name          쿠키 이름 (e.g., "refreshToken")
+     * @param value         쿠키 값 (JWT)
+     * @param maxAgeSeconds 쿠키 유효 기간 (초 단위)
+     */
+    public void addJwtCookie(HttpServletResponse response, String name, String value, long maxAgeSeconds) {
+        
+        System.out.println("addJwtCookie 진입");
+        
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(secure)
                 .path("/")
-                .maxAge(15 * 60)       // 15분
-                .sameSite("Lax")       // 일부 안전한 요청에서만 전송
+                .maxAge(maxAgeSeconds)
+                .sameSite("Lax") // CSRF 방지를 위해 "Strict" 또는 "Lax"를 사용합니다.
                 .build();
 
-        // Refresh Token
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)        // JS 접근 불가
-//                .secure(true)          // HTTPS에서만 전송
-                .path("/")
-                .maxAge(7 * 24 * 60 * 60) // 7일
-                .sameSite("Strict")    // CSRF 방지
-                .build();
-
-        // 응답 헤더에 추가
-        response.addHeader("Set-Cookie", accessCookie.toString());
-        response.addHeader("Set-Cookie", refreshCookie.toString());
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
     /**
@@ -39,13 +40,8 @@ public class CookieUtil {
      * @param response HttpServletResponse
      * @param name     삭제할 쿠키 이름
      */
-    public void expireCookie(HttpServletResponse response, String name, boolean isSecure) {
-        Cookie cookie = new Cookie(name, null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(isSecure); // HTTPS 환경에서만 전송
-        cookie.setPath("/");
-        cookie.setMaxAge(0); // MaxAge를 0으로 설정하여 즉시 만료
-
-        response.addCookie(cookie);
+    public void expireCookie(HttpServletResponse response, String name) {
+        // 쿠키 값을 비우고, maxAge를 0으로 설정하여 즉시 만료시킵니다.
+        addJwtCookie(response, name, "", 0);
     }
 }

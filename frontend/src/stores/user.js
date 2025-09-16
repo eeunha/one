@@ -3,8 +3,9 @@ import axios from '../utils/axios';
 
 export const useUserStore = defineStore('user', {
     state: () => ({
-        name: '',
-        email: '',
+        id: null,
+        name: null,
+        email: null,
         isAuthenticated: false,
     }),
     actions: {
@@ -25,6 +26,16 @@ export const useUserStore = defineStore('user', {
             this.name = '';
             this.email = '';
             this.isAuthenticated = false;
+        },
+        setUser(user) {
+            this.id = user.id
+            this.name = user.name
+            this.email = user.email
+        },
+        clearUser() {
+            this.id = null
+            this.name = null
+            this.email = null
         }
     }
 });

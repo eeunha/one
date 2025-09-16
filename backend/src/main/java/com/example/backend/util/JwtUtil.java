@@ -69,14 +69,18 @@ public class JwtUtil {
         return false;
     }
 
-//    // 토큰에서 모든 클레임(정보) 추출
-//    public Claims getClaimsFromToken(String token) {
-//        return Jwts.parserBuilder()
-//                .setSigningKey(secretKey)
-//                .build()
-//                .parseClaimsJws(token)
-//                .getBody();
-//    }
+    // 토큰에서 사용자 ID 추출
+    public Long getUserIdFromToken(String token) {
+        // 토큰의 Subject에서 사용자 ID를 Long 타입으로 변환하여 반환
+        String subject = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+
+        return Long.parseLong(subject);
+    }
 
     // id에서 가져오는 걸로 수정할 것
     // 토큰에서 email 정보 추출

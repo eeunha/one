@@ -1,87 +1,65 @@
 package com.example.backend.config;
 
-import com.example.backend.dto.JwtAndProfileResponseDTO;
-import com.example.backend.service.UserService;
-import com.example.backend.util.CookieUtil;
-import jakarta.servlet.http.Cookie;
+import com.example.backend.filter.JwtTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.Arrays;
 
 @Configuration
 public class SecurityConfig {
 
-    private final UserService userService;
-    private final CookieUtil cookieUtil; // ★ CookieUtil 주입
+    private final JwtTokenFilter jwtTokenFilter;
 
-    public SecurityConfig(UserService userService, CookieUtil cookieUtil) {
-        this.userService = userService;
-        this.cookieUtil = cookieUtil;
+    public SecurityConfig(JwtTokenFilter jwtTokenFilter) {
+        this.jwtTokenFilter = jwtTokenFilter;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // 1. CORS 설정을 적용합니다.
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // 2. CSRF 보호를 비활성화합니다.
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ★ CORS 설정을 Security에 통합
+
+                // 3. 세션 관리를 STATELESS로 설정합니다. JWT를 사용하므로 세션은 필요하지 않습니다.
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+
+                // 4. JWT 필터를 추가합니다.
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/oauth/**", "/api/auth/**", "/api/login/oauth2/**").permitAll()
+                        .requestMatchers("/auth/google/login", "/auth/**").permitAll()
+                        // preflight 요청에 대한 OPTIONS 메서드를 허용합니다.
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        // 나머지 모든 요청은 인증이 필요합니다.
                         .anyRequest().authenticated()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(oAuth2SuccessHandler())
-                        .authorizationEndpoint(endpoint -> endpoint
-                                .baseUri("/api/oauth2/authorization")
-                        )
-                        .redirectionEndpoint(endpoint -> endpoint
-                                .baseUri("/api/login/oauth2/code/*")
-                        )
                 );
         return http.build();
     }
 
-    @Bean
-    public AuthenticationSuccessHandler oAuth2SuccessHandler() {
-        return (request, response, authentication) -> {
-            OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-            String email = oAuth2User.getAttribute("email");
-            String name = oAuth2User.getAttribute("name");
-
-            // 1. UserService를 호출하여 JwtAndProfileResponse 객체를 받음
-            JwtAndProfileResponseDTO jwtAndProfileResponse = userService.processGoogleLogin(email, name);
-
-            String accessToken = jwtAndProfileResponse.getAccessToken();
-            String refreshToken = jwtAndProfileResponse.getRefreshToken();
-
-            // 2. 두 개의 토큰을 쿠키에 담는 새로운 메서드를 호출
-            cookieUtil.addJwtCookies(response, accessToken, refreshToken);
-
-            // 3. (선택사항) 프로필 정보를 세션에 저장하거나 리다이렉트 시 쿼리 파라미터로 추가
-            // 현재는 쿠키만 추가하고 리다이렉트하는 방식이므로 추가적인 로직은 필요 없습니다.
-
-            response.sendRedirect("http://localhost:8086/profile");
-        };
-    }
-
-    // ★ CORS 설정 Bean을 SecurityConfig에 추가
+    // CORS 설정을 위한 Bean
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8086")); // 허용할 프론트 주소
+        // 프론트엔드 주소만 허용합니다.
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8086"));
+        // 모든 HTTP 메서드 허용
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // 모든 헤더 허용
         configuration.setAllowedHeaders(Arrays.asList("*"));
+        // `withCredentials: true` 요청을 허용합니다.
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

@@ -33,8 +33,15 @@ public class OAuthService {
         this.userService = userService;
     }
 
-    // 반환 타입을 Map<String, String>으로 변경
+    /**
+     * Google로부터 받은 인증 코드를 처리하고, JWT와 프로필 정보를 반환합니다.
+     * @param code Google에서 받은 인증 코드
+     * @return JWT와 프로필 정보가 담긴 DTO
+     */
     public JwtAndProfileResponseDTO getJwtAndProfileResponse(String code) {
+        
+        System.out.println("getJwtAndProfileResponse 진입");
+        
         // 1. code -> access token 교환 (WebClient 사용)
         String tokenUrl = "https://oauth2.googleapis.com/token";
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
