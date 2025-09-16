@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 기본 axios 인스턴스 설정
 const instance = axios.create({
-    baseURL: 'http://localhost:8085',
+    baseURL: 'http://localhost:8085/api',
     withCredentials: true, // 쿠키 전송 허용
     headers: {
         'Content-Type': 'application/json',

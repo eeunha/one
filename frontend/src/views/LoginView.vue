@@ -3,7 +3,7 @@
 const googleLogin = () => {
 // 백엔드 주소와 OAuth2 엔드포인트를 지정합니다.
   const backendUrl = "http://localhost:8085";
-  const authUrl = `${backendUrl}/oauth2/authorization/google`;
+  const authUrl = `${backendUrl}/api/oauth2/authorization/google`;
 
   window.location.href = authUrl;
 };

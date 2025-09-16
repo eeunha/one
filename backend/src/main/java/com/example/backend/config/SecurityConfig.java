@@ -37,16 +37,16 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/oauth/**", "/auth/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/api/oauth/**", "/api/auth/**", "/api/login/oauth2/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2SuccessHandler())
                         .authorizationEndpoint(endpoint -> endpoint
-                                .baseUri("/oauth2/authorization")
+                                .baseUri("/api/oauth2/authorization")
                         )
                         .redirectionEndpoint(endpoint -> endpoint
-                                .baseUri("/login/oauth2/code/*")
+                                .baseUri("/api/login/oauth2/code/*")
                         )
                 );
         return http.build();
