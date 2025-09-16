@@ -8,7 +8,6 @@ import { useAuthStore } from '@/stores/auth.js'; // ★ Pinia 스토어 import
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
-  { path: '/about', name: 'about', component: () => import('../views/AboutView.vue') },
   { path: '/test', name: 'test', component: TestView },
   { path: '/login', name: 'login', component: LoginView },
   { path: '/profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true } },
