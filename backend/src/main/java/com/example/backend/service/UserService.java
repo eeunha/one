@@ -58,15 +58,9 @@ public class UserService implements UserDetailsService {
 
         // 4. 토큰과 프로필 정보를 DTO에 담아서 반환합니다.
         // 이 DTO는 AuthController에서 사용됩니다.
-        JwtAndProfileResponseDTO response = new JwtAndProfileResponseDTO();
-        response.setAccessToken(accessToken);
-//        response.setRefreshToken(refreshToken);
-        response.setId(user.getId());
-        response.setEmail(user.getEmail());
-        response.setName(user.getName());
 
         // 쿠키를 통해 컨트롤러에서 브라우저에 전달
-        return response;
+        return new JwtAndProfileResponseDTO(accessToken, null, user.getId(), user.getEmail(), user.getName());
     }
 
     @Override

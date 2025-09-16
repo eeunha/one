@@ -1,7 +1,6 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.JwtAndProfileResponseDTO;
-import com.example.backend.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
