@@ -1,9 +1,10 @@
 <script setup>
 // 구글 로그인 버튼 클릭 시 백엔드의 OAuth2 인증 시작점으로 이동
 const googleLogin = () => {
-// 백엔드 주소와 OAuth2 엔드포인트를 지정합니다.
-  const backendUrl = "http://localhost:8085";
-  const authUrl = `${backendUrl}/oauth2/authorization/google`;
+  const clientId = '879558565108-ld94ep4oh3ei2srs1tnnjnvq90iohv0o.apps.googleusercontent.com'; // 여기에 클라이언트 ID를 넣으세요.
+  // Google 로그인 후 돌아올 프론트엔드 URL입니다.
+  const redirectUri = 'http://localhost:8086/oauth2/redirect';
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&scope=openid%20profile%20email&redirect_uri=${redirectUri}`;
 
   window.location.href = authUrl;
 };
