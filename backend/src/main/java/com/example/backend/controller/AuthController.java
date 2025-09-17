@@ -1,18 +1,17 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.AccessTokenAndProfileResponseDTO;
 import com.example.backend.dto.JwtAndProfileResponseDTO;
-import com.example.backend.entity.User;
 import com.example.backend.service.AuthService;
 import com.example.backend.service.OAuthService;
 import com.example.backend.service.UserService;
 import com.example.backend.util.CookieUtil;
-import com.example.backend.util.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 // 로그인 된(인증된) 사용자의 상태 관리 및 필요한 데이터 제공
@@ -23,14 +22,12 @@ public class AuthController {
 
     private final OAuthService oAuthService;
     private final UserService userService;
-    private final JwtUtil jwtUtil;
     private final CookieUtil cookieUtil;
     private final AuthService authService;
 
-    public AuthController(OAuthService oAuthService, UserService userService, JwtUtil jwtUtil, CookieUtil cookieUtil, AuthService authService) {
+    public AuthController(OAuthService oAuthService, UserService userService, CookieUtil cookieUtil, AuthService authService) {
         this.oAuthService = oAuthService;
         this.userService = userService;
-        this.jwtUtil = jwtUtil;
         this.cookieUtil = cookieUtil;
         this.authService = authService;
     }
@@ -41,7 +38,6 @@ public class AuthController {
      * @param requestBody frontend에서 받은 code가 담긴 요청 본문
      * @return JWT와 사용자 프로필 정보가 담긴 DTO
      */
-//    /google/token
     @PostMapping("/google/login")
     public ResponseEntity<JwtAndProfileResponseDTO> googleLogin(
             @RequestBody Map<String, String> requestBody, HttpServletResponse response
@@ -62,23 +58,27 @@ public class AuthController {
         return ResponseEntity.ok(fullResponse);
     }
 
-    // JWT Access Token으로 사용자 프로필 조회
+    // 새로고침 시 사용자 정보를 복구하는 API
     @GetMapping("/profile")
-    public Map<String, String> getProfile(@CookieValue("accessToken") String token) {
+    public ResponseEntity<?> getProfile(Authentication authentication) {
+        try {
+            // Spring Security의 Authentication 객체에서 사용자 ID 추출
+            // JwtUtil을 통해 토큰이 이미 검증된 상태이므로 별도의 유효성 검사는 불필요
+            String userIdFromToken = authentication.getName(); // JWT 토큰의 subject(사용자 ID)를 가져옴
 
-        // ★ JWT 검증 및 정보 추출 로직을 JwtUtil에 위임
-        if (!jwtUtil.validateToken(token)) {
-            // 토큰이 유효하지 않으면 JWTException을 발생시킵니다.
-            throw new JwtException("Invalid or expired JWT token.");
+            // 사용자 ID를 기반으로 DB에서 프로필 정보를 조회하고 새로운 토큰을 생성
+            AccessTokenAndProfileResponseDTO responseDto = userService.getProfileWithNewToken(userIdFromToken);
+
+            if (responseDto != null) {
+                return ResponseEntity.ok(responseDto); // 200 OK
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found"); // 404 Not Found
+            }
+        } catch (Exception e) {
+            // 토큰이 유효하지 않거나 만료된 경우 Spring Security가 401을 처리함.
+            // 하지만 예외 처리의 견고함을 위해 명시적인 에러 메시지를 반환
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired token.");
         }
-
-        String email = jwtUtil.getEmailFromToken(token);
-        User user = userService.getUserByEmail(email);
-
-        Map<String, String> profile = new HashMap<>();
-        profile.put("name", user.getName());
-        profile.put("email", user.getEmail());
-        return profile;
     }
 
     // 로그아웃 기능

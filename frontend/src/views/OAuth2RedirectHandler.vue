@@ -9,22 +9,21 @@ const router = useRouter();
 const authStore = useAuthStore(); // 스토어 인스턴스 사용
 
 onMounted(async () => {
-  console.log('OAuth2RedirectHandler onMounted');
 
   const code = route.query.code;
 
   if (code) {
-    console.log('if code');
     try {
-      console.log('try');
       // 1. 백엔드 API 호출 (code를 쿼리 파라미터로 전달)
       const response = await axios.post(`/auth/google/login`, { code: code });
 
-      console.log('response: ', response);
-
       // 2. 응답 데이터에서 토큰과 프로필 정보 추출
       const { accessToken, id, name, email } = response.data; // 순서 상관 X
+
       console.log("로그인 성공! 응답 데이터:", response.data);
+
+      // localStorage에 accessToken 추가
+      // localStorage.setItem("accessToken", accessToken);
 
       // 3. Pinia 스토어에 로그인 정보 저장
       // setLoginInfo는 액세스 토큰과 사용자 데이터를 받습니다.

@@ -22,6 +22,21 @@ const router = createRouter({
 // 전역 네비게이션 가드
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
+
+  // ★ 로그인 상태 복원 로직 추가
+  // 페이지 새로고침 시 Pinia 스토어가 초기화되므로,
+  // localStorage의 토큰을 사용하여 로그인 상태를 먼저 복원합니다.
+  if (!authStore.accessToken && localStorage.getItem('accessToken')) {
+    try {
+      await authStore.restoreAuth();
+    } catch (e) {
+      // 토큰이 유효하지 않으면 로그인 페이지로 리다이렉트
+      console.error("Failed to restore auth state, redirecting to login.");
+      authStore.clearLoginInfo();
+      return next('/login');
+    }
+  }
+
   const isLoggedIn = !!authStore.accessToken;
 
   // 인증이 필요한 페이지에 접근했고, 로그인 상태가 아닌 경우
