@@ -6,6 +6,7 @@ import com.example.backend.service.AuthService;
 import com.example.backend.service.OAuthService;
 import com.example.backend.service.UserService;
 import com.example.backend.util.CookieUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,8 @@ public class AuthController {
         // 1. OAuthService를 호출하여 모든 JWT와 프로필 정보를 받습니다.
         JwtAndProfileResponseDTO fullResponse = oAuthService.getJwtAndProfileResponse(code);
 
+        System.out.println("로그인 후 refresh: " + fullResponse.getRefreshToken());
+
         // 2. 리프레시 토큰을 HttpOnly 쿠키에 담아 반환합니다.
         // 이 쿠키는 자바스크립트로 접근할 수 없어 XSS 공격에 안전합니다.
         cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), 60 * 60 * 24 * 7);
@@ -83,12 +86,34 @@ public class AuthController {
 
     // 로그아웃 기능
     @PostMapping("/logout")
-    public void logout(
-            @CookieValue("refreshToken") String refreshToken,
-            HttpServletResponse response
-    ) {
-        authService.logout(refreshToken);
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
 
+        System.out.println("request: " + request + " response: " + response);
+
+        // 1. 요청에서 리프레시 토큰 쿠키를 찾습니다.
+        String refreshToken = cookieUtil.getCookieValue(request, "refreshToken");
+
+        // --- 디버깅용 로그 추가 ---
+        System.out.println("Received logout request. Extracted refreshToken: " + refreshToken);
+        // -----------------------
+
+        // 2. 리프레시 토큰이 존재하면 DB에서 삭제합니다.
+        if (refreshToken != null) {
+            try {
+                authService.logout(refreshToken);
+                System.out.println("User logged out successfully.");
+            } catch (Exception e) {
+                System.err.println("Logout failed due to an error: " + e.getMessage());
+                // 에러 발생 시에도 쿠키는 삭제하도록 진행
+            }
+        } else {
+            System.err.println("Logout request failed: No refresh token found in cookie.");
+        }
+
+        // 3. 브라우저의 리프레시 토큰 쿠키를 만료시킵니다.
         cookieUtil.expireCookie(response, "refreshToken");
+        System.out.println("쿠키 만료 이후");
+
+        return ResponseEntity.ok().build();
     }
 }

@@ -22,9 +22,6 @@ onMounted(async () => {
 
       console.log("로그인 성공! 응답 데이터:", response.data);
 
-      // localStorage에 accessToken 추가
-      // localStorage.setItem("accessToken", accessToken);
-
       // 3. Pinia 스토어에 로그인 정보 저장
       // setLoginInfo는 액세스 토큰과 사용자 데이터를 받습니다.
       authStore.setLoginInfo(accessToken, { id, name, email });
