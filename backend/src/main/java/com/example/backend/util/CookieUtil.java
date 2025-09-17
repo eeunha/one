@@ -1,5 +1,7 @@
 package com.example.backend.util;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
@@ -43,5 +45,27 @@ public class CookieUtil {
     public void expireCookie(HttpServletResponse response, String name) {
         // 쿠키 값을 비우고, maxAge를 0으로 설정하여 즉시 만료시킵니다.
         addJwtCookie(response, name, "", 0);
+    }
+
+    /**
+     * HttpServletRequest에서 특정 이름의 쿠키 값을 가져옵니다.
+     * @param request HttpServletRequest
+     * @param name 찾을 쿠키 이름
+     * @return 쿠키 값, 없으면 null
+     */
+    public String getCookieValue(HttpServletRequest request, String name) {
+
+        System.out.println("getCookieValue, request: " + request);
+
+        if (request.getCookies() == null) {
+            return null;
+        }
+        for (Cookie cookie : request.getCookies()) {
+            if (name.equals(cookie.getName())) {
+                System.out.println("getCookieValue, cookie: " + cookie);
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 }

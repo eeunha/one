@@ -61,7 +61,7 @@ public class UserService implements UserDetailsService {
         // 이 DTO는 AuthController에서 사용됩니다.
 
         // 쿠키를 통해 컨트롤러에서 브라우저에 전달
-        return new JwtAndProfileResponseDTO(accessToken, null, user.getId(), user.getEmail(), user.getName());
+        return new JwtAndProfileResponseDTO(accessToken, refreshToken, user.getId(), user.getEmail(), user.getName());
     }
 
     @Override
