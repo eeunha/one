@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.example.backend.dto.AccessTokenAndProfileResponseDTO;
 import com.example.backend.dto.JwtAndProfileResponseDTO;
 import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
@@ -88,8 +89,19 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
     }
 
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    /**
+     * 유효한 토큰에서 받은 사용자 ID(String)로 프로필 정보와 새로운 토큰을 함께 조회합니다.
+     * @param userIdFromToken 유효한 토큰에서 추출한 사용자 ID (String)
+     * @return 프로필 정보와 새로운 토큰이 담긴 AccessTokenAndProfileResponseDTO
+     */
+    public AccessTokenAndProfileResponseDTO getProfileWithNewToken(String userIdFromToken) {
+        try {
+            Long userId = Long.parseLong(userIdFromToken);
+            User user = getUserByUserId(userId);
+            String newAccessToken = jwtUtil.generateAccessToken(user.getId());
+            return new AccessTokenAndProfileResponseDTO(newAccessToken, user.getId(), user.getEmail(), user.getName());
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Invalid user ID format in token: " + userIdFromToken);
+        }
     }
 }
