@@ -56,6 +56,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 // Spring Security 컨텍스트에 인증 정보를 설정합니다.
                 // 이제 이 요청은 인증된 상태로 처리됩니다.
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            } else {
+                // ❌ 토큰이 만료되었거나 위조되었을 때
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired JWT token");
+                return;
             }
         }
 

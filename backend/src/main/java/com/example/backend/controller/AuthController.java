@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.AccessTokenAndProfileResponseDTO;
 import com.example.backend.dto.JwtAndProfileResponseDTO;
+import com.example.backend.exception.RefreshTokenExpiredException;
 import com.example.backend.service.AuthService;
 import com.example.backend.service.OAuthService;
 import com.example.backend.service.UserService;
@@ -116,4 +117,23 @@ public class AuthController {
 
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+
+        System.out.println("refreshToken 메소드 진입");
+        try {
+            // 1. 서비스에게 처리 위임
+            String newAccessToken = authService.refreshAccessToken(request, response);
+
+            System.out.println("Refresh token: " + newAccessToken);
+
+            // 2. 새 Access Token 응답
+            return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+        } catch (RefreshTokenExpiredException e) {
+            // 3. Refresh Token 만료 등 예외 처리
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
 }

@@ -81,15 +81,4 @@ public class JwtUtil {
 
         return Long.parseLong(subject);
     }
-
-    // id에서 가져오는 걸로 수정할 것
-    // 토큰에서 email 정보 추출
-    public String getEmailFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-    }
 }
