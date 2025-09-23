@@ -123,10 +123,9 @@ public class AuthController {
 
         System.out.println("refreshToken 메소드 진입");
         try {
-            // 1. 서비스에게 처리 위임
             String newAccessToken = authService.refreshAccessToken(request, response);
 
-            System.out.println("Refresh token: " + newAccessToken);
+            System.out.println("AuthController - newAccessToken token: " + newAccessToken);
 
             // 2. 새 Access Token 응답
             return ResponseEntity.ok(Map.of("accessToken", newAccessToken));

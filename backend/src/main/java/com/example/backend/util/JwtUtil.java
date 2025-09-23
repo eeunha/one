@@ -81,4 +81,16 @@ public class JwtUtil {
 
         return Long.parseLong(subject);
     }
+
+    public Claims parseClaims(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            throw e;
+        }
+    }
 }

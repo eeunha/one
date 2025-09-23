@@ -47,7 +47,7 @@ instance.interceptors.response.use(
             try {
                 // 6. Refresh Token으로 Access Token 재발급 요청
                 //    쿠키(HttpOnly)에 저장된 Refresh Token이 자동 전송됨
-                const refreshResponse = await axios.post('/auth/refresh', {}, { withCredentials: true });
+                const refreshResponse = await instance.post('/auth/refresh', {});
 
                 // 7. 새로 발급받은 Access Token 추출
                 const newAccessToken = refreshResponse.data.accessToken;
@@ -74,24 +74,5 @@ instance.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-// // 백엔드로부터 401 (Unauthorized) 오류를 받으면, Pinia 스토어의 로그인 정보를 초기화하고 자동으로 로그인 페이지로 이동
-// instance.interceptors.response.use(
-//     (response) => response,
-//     (error) => {
-//
-//         const originalRequest = error.config;
-//         if (error.response && error.response.status === 401 && !originalRequest._retry) {
-//             originalRequest._retry = true;
-//
-//         if (error.response && error.response.status === 401) {
-//             console.log('Authentication failed! Redirecting to login page.');
-//             const authStore = useAuthStore();
-//             authStore.clearLoginInfo();
-//             // Redirect to login page
-//             router.push('/login');
-//         }
-//         return Promise.reject(error);
-//     }
-// );
 
 export default instance;

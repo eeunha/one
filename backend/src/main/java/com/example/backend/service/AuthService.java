@@ -67,13 +67,16 @@ public class AuthService {
 
         // 6. Refresh Token 만료 임박 시 새 Refresh Token 발급
         if (isRefreshTokenExpiresSoon(user)) {
+            System.out.println("리프레시 토큰 만료 임박");
+
             String newRefreshToken = jwtUtil.generateRefreshToken(user.getId());
             user.setRefreshToken(newRefreshToken);
-            user.setRefreshTokenExpiry(LocalDateTime.now().plusDays(30));
+            user.setRefreshTokenExpiry(LocalDateTime.now().plusSeconds(30));
             userRepository.save(user);
 
             // 쿠키에 새 Refresh Token 설정
-            cookieUtil.addJwtCookie(response, "refreshToken", refreshToken, 60 * 24 * 60 * 7); // 7일 (s)
+//            cookieUtil.addJwtCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 7); // 7일 (s)
+            cookieUtil.addJwtCookie(response, "refreshToken", refreshToken, 30); // 30초 (s)
         }
 
         return newAccessToken;
@@ -94,6 +97,7 @@ public class AuthService {
 
     // 8. Refresh Token 만료 임박 체크 (예: 남은 기간 1일 이하)
     private boolean isRefreshTokenExpiresSoon(User user) {
+        System.out.println("isRefreshTokenExpiresSoon 메소드 진입");
         return ChronoUnit.DAYS.between(LocalDateTime.now(), user.getRefreshTokenExpiry()) <= 1;
     }
 }
