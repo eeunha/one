@@ -17,9 +17,16 @@ app.use(pinia)
 app.use(router)
 
 // 애플리케이션 마운트 후, router.isReady를 기다린 다음 restoreAuth 호출
-router.isReady().then(() => {
-    const authStore = useAuthStore();
-    authStore.restoreAuth();
+router.isReady().then(async () => {
+    console.log("main.js - restoreAuth 호출 직전");
+    console.log('main.js')
+    // const authStore = useAuthStore();
+    // authStore.restoreAuth();
+
+    const authStore = useAuthStore()
+    if (!authStore.accessToken && localStorage.getItem("accessToken")) {
+        await authStore.restoreAuth();
+    }
 });
 
 app.mount('#app')

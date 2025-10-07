@@ -23,7 +23,7 @@ public class CookieUtil {
      */
     public void addJwtCookie(HttpServletResponse response, String name, String value, long maxAgeSeconds) {
         
-        System.out.println("addJwtCookie 진입");
+        System.out.println("CookieUtil - addJwtCookie 진입");
         
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .httpOnly(true)
@@ -43,6 +43,8 @@ public class CookieUtil {
      * @param name     삭제할 쿠키 이름
      */
     public void expireCookie(HttpServletResponse response, String name) {
+        System.out.println("CookieUtil - expireCookie 진입");
+
         // 쿠키 값을 비우고, maxAge를 0으로 설정하여 즉시 만료시킵니다.
         addJwtCookie(response, name, "", 0);
     }
@@ -54,7 +56,7 @@ public class CookieUtil {
      * @return 쿠키 값, 없으면 null
      */
     public String getCookieValue(HttpServletRequest request, String name) {
-
+        System.out.println("CookieUtil - getCookieValue 진입");
         System.out.println("getCookieValue, request: " + request);
 
         if (request.getCookies() == null) {

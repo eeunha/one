@@ -14,6 +14,11 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.setItem('accessToken', token); // localStorage에도 저장
     };
 
+    const setAccessToken = (token) => {
+        accessToken.value = token;
+        localStorage.setItem('accessToken', token);
+    };
+
     const clearLoginInfo = () => {
         accessToken.value = null;
         user.value = null;
@@ -21,7 +26,11 @@ export const useAuthStore = defineStore('auth', () => {
     };
 
     const restoreAuth = async () => {
+        console.log('auth.js');
+        console.log('localStorage: ', localStorage);
         const storedToken = localStorage.getItem('accessToken');
+        console.log('storedToken: ', storedToken);
+
         if (storedToken) {
             try {
                 console.log("Restoring auth state...");
@@ -51,5 +60,5 @@ export const useAuthStore = defineStore('auth', () => {
     };
 
     // 상태와 액션을 반환
-    return { accessToken, user, setLoginInfo, clearLoginInfo, restoreAuth };
+    return { accessToken, user, setLoginInfo, setAccessToken, clearLoginInfo, restoreAuth };
 });

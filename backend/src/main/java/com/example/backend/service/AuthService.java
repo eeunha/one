@@ -27,6 +27,9 @@ public class AuthService {
     }
 
     public void logout (String refreshToken) {
+
+        System.out.println("AuthService - logout 메소드 진입");
+
         // 1. 리프레시 토큰에서 사용자 id 추출
         Long userId = jwtUtil.getUserIdFromToken(refreshToken);
 
@@ -71,18 +74,23 @@ public class AuthService {
 
             String newRefreshToken = jwtUtil.generateRefreshToken(user.getId());
             user.setRefreshToken(newRefreshToken);
-            user.setRefreshTokenExpiry(LocalDateTime.now().plusSeconds(30));
+//            user.setRefreshTokenExpiry(LocalDateTime.now().plusSeconds(10)); // 리프레시토큰 기간 10초
+            user.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7)); // 리프레시토큰 기간 7일
             userRepository.save(user);
 
             // 쿠키에 새 Refresh Token 설정
-//            cookieUtil.addJwtCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 7); // 7일 (s)
-            cookieUtil.addJwtCookie(response, "refreshToken", refreshToken, 30); // 30초 (s)
+            cookieUtil.addJwtCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 7); // 7일 (s)
+//            cookieUtil.addJwtCookie(response, "refreshToken", refreshToken, 10); // 10초 (s)
+//            cookieUtil.addJwtCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 + 20); // 1일 20초 (s)
         }
 
         return newAccessToken;
     }
 
     private String extractRefreshTokenFromCookie(HttpServletRequest request) {
+
+        System.out.println("extractRefreshTokenFromCookie 메소드 진입");
+        
         Cookie[] cookies = request.getCookies();
         String refreshToken = null;
         if (cookies != null) {

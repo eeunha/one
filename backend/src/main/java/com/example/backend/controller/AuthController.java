@@ -56,6 +56,8 @@ public class AuthController {
         // 2. 리프레시 토큰을 HttpOnly 쿠키에 담아 반환합니다.
         // 이 쿠키는 자바스크립트로 접근할 수 없어 XSS 공격에 안전합니다.
         cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), 60 * 60 * 24 * 7);
+//        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), 10);
+//        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), 60 * 60 * 24 + 20);
 
         // 3. 응답 바디에는 리프레시 토큰을 제외한 액세스 토큰과 프로필 정보만 담아 반환합니다.
         fullResponse.setRefreshToken(null);
@@ -65,6 +67,9 @@ public class AuthController {
     // 새로고침 시 사용자 정보를 복구하는 API
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(Authentication authentication) {
+
+        System.out.println("getProfile 메소드 진입");
+        
         try {
             // Spring Security의 Authentication 객체에서 사용자 ID 추출
             // JwtUtil을 통해 토큰이 이미 검증된 상태이므로 별도의 유효성 검사는 불필요
@@ -88,7 +93,7 @@ public class AuthController {
     // 로그아웃 기능
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-
+        System.out.println("logout 메소드 진입");
         System.out.println("request: " + request + " response: " + response);
 
         // 1. 요청에서 리프레시 토큰 쿠키를 찾습니다.

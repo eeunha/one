@@ -39,7 +39,7 @@ public class OAuthService {
      */
     public JwtAndProfileResponseDTO getJwtAndProfileResponse(String code) {
         
-        System.out.println("getJwtAndProfileResponse 진입");
+        System.out.println("OAuthService - getJwtAndProfileResponse 진입");
         
         // 1. code -> access token 교환 (WebClient 사용)
         String tokenUrl = "https://oauth2.googleapis.com/token";

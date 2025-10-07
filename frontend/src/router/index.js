@@ -38,6 +38,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   const isLoggedIn = !!authStore.accessToken;
+  console.log("beforeEach - isLoggedIn:", isLoggedIn, "accessToken:", authStore.accessToken)
 
   // 인증이 필요한 페이지에 접근했고, 로그인 상태가 아닌 경우
   if (to.meta.requiresAuth && !isLoggedIn) {

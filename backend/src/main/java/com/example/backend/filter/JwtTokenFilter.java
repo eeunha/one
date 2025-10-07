@@ -29,10 +29,24 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        final String requestURI = request.getRequestURI();
+
+        // Context Path: /api
+        // 요청 URI: /api/auth/refresh
+        if (requestURI.contains("/api/auth/refresh") || requestURI.contains("/api/auth/google/login")) {
+            // 이 경로는 JWT 검증을 건너뛰고 바로 다음 필터로 넘겨야 합니다.
+            // Spring Security의 .permitAll() 규칙에 따라 처리될 것입니다.
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         final String authHeader = request.getHeader("Authorization");
         Long userId = null;
         String jwt = null;
 
+        System.out.println("JwtTokenFilter - doFilterInternal 진입");
+        
         // JWT 토큰 추출
         // HTTP 요청 헤더에서 "Authorization: Bearer <token>" 형식의 토큰을 가져옵니다.
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -41,12 +55,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             try {
                 // 토큰 유효성 검사
                 Claims claims = jwtUtil.parseClaims(jwt);
+                System.out.println("토큰 유효성 검사 완료");
 
                 // 클레임에서 사용자 아이디 가져오기
-                userId = Long.parseLong(claims.getSubject());
+                userId = (Long) Long.parseLong(claims.getSubject());
 
                 if (SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = userService.loadUserByUsername(String.valueOf(userId));
+
+                    System.out.println("인증 객체 생성");
 
                     // 유효한 토큰인 경우, 인증 객체를 생성합니다.
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(

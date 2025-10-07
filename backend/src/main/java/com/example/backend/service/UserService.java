@@ -34,7 +34,7 @@ public class UserService implements UserDetailsService {
      */
     public JwtAndProfileResponseDTO processGoogleLogin(String email, String name) {
 
-        System.out.println("processGoogleLogin 진입");
+        System.out.println("UserService - processGoogleLogin 진입");
         
         // 1. 이메일로 기존 사용자가 있는지 조회합니다. 없으면 새로 생성합니다.
         User user = userRepository.findByEmail(email)
@@ -54,7 +54,9 @@ public class UserService implements UserDetailsService {
         // 3. 리프레시 토큰을 DB에 저장합니다.
         // 이는 토큰 재발급 시 사용자의 유효성을 확인하는 데 필요합니다.
         user.setRefreshToken(refreshToken);
-        user.setRefreshTokenExpiry(LocalDateTime.now().plusWeeks(2));
+//        user.setRefreshTokenExpiry(LocalDateTime.now().plusWeeks(2));
+//        user.setRefreshTokenExpiry(LocalDateTime.now().plusSeconds(10));
+        user.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7)); // 7일
         userRepository.save(user);
 
         // 4. 토큰과 프로필 정보를 DTO에 담아서 반환합니다.
@@ -66,6 +68,9 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        
+        System.out.println("UserService - loadUserByUsername 메소드 진입");
+        
         // userId는 Long 타입이므로 String으로 받은 username을 Long으로 변환
         Long userId = Long.parseLong(username);
         User user = userRepository.findById(userId)
@@ -85,6 +90,8 @@ public class UserService implements UserDetailsService {
      * @return User 엔티티
      */
     public User getUserByUserId(Long userId) {
+        System.out.println("UserService - getUserByUserId 메소드 진입");
+        
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
     }
@@ -95,6 +102,9 @@ public class UserService implements UserDetailsService {
      * @return 프로필 정보와 새로운 토큰이 담긴 AccessTokenAndProfileResponseDTO
      */
     public AccessTokenAndProfileResponseDTO getProfileWithNewToken(String userIdFromToken) {
+
+        System.out.println("UserService - getProfileWithNewToken 메소드 진입");
+
         try {
             Long userId = Long.parseLong(userIdFromToken);
             User user = getUserByUserId(userId);
