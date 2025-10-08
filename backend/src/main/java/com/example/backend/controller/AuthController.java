@@ -2,12 +2,14 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.AccessTokenAndProfileResponseDTO;
 import com.example.backend.dto.JwtAndProfileResponseDTO;
+import com.example.backend.exception.RefreshTokenExpiredException;
 import com.example.backend.service.AuthService;
 import com.example.backend.service.OAuthService;
 import com.example.backend.service.UserService;
 import com.example.backend.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,6 +22,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    @Value("${jwt.refresh-token-validity-in-seconds}")
+    private long refreshTokenValidityInSeconds;
 
     private final OAuthService oAuthService;
     private final UserService userService;
@@ -54,7 +59,7 @@ public class AuthController {
 
         // 2. 리프레시 토큰을 HttpOnly 쿠키에 담아 반환합니다.
         // 이 쿠키는 자바스크립트로 접근할 수 없어 XSS 공격에 안전합니다.
-        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), 60 * 60 * 24 * 7);
+        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), refreshTokenValidityInSeconds); // 1일 20초 (s)
 
         // 3. 응답 바디에는 리프레시 토큰을 제외한 액세스 토큰과 프로필 정보만 담아 반환합니다.
         fullResponse.setRefreshToken(null);
@@ -64,6 +69,9 @@ public class AuthController {
     // 새로고침 시 사용자 정보를 복구하는 API
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(Authentication authentication) {
+
+        System.out.println("getProfile 메소드 진입");
+        
         try {
             // Spring Security의 Authentication 객체에서 사용자 ID 추출
             // JwtUtil을 통해 토큰이 이미 검증된 상태이므로 별도의 유효성 검사는 불필요
@@ -87,7 +95,7 @@ public class AuthController {
     // 로그아웃 기능
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-
+        System.out.println("logout 메소드 진입");
         System.out.println("request: " + request + " response: " + response);
 
         // 1. 요청에서 리프레시 토큰 쿠키를 찾습니다.
@@ -116,4 +124,22 @@ public class AuthController {
 
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+
+        System.out.println("refreshToken 메소드 진입");
+        try {
+            String newAccessToken = authService.refreshAccessToken(request, response);
+
+            System.out.println("AuthController - newAccessToken token: " + newAccessToken);
+
+            // 2. 새 Access Token 응답
+            return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+        } catch (RefreshTokenExpiredException e) {
+            // 3. Refresh Token 만료 등 예외 처리
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
 }

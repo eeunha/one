@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import axios from '@/utils/axios';
-import { useAuthStore } from '@/stores/auth.js';
+import { useAuthStore } from '@/stores/useAuthStore.js';
 import { storeToRefs } from 'pinia'; // storeToRefs import
 
 const router = useRouter();
