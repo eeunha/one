@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useAuthStore } from '@/stores/auth.js';
+import { useAuthStore } from '@/stores/useAuthStore.js';
 import router from '@/router'; // 라우터 import
 
 // 기본 axios 인스턴스 설정

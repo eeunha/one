@@ -4,7 +4,7 @@ import TestView from '../views/TestView.vue';
 import LoginView from "@/views/LoginView.vue";
 import ProfileView from "@/views/ProfileView.vue";
 import OAuth2RedirectHandler from "@/views/OAuth2RedirectHandler.vue";
-import { useAuthStore } from '@/stores/auth.js'; // ★ Pinia 스토어 import
+import { useAuthStore } from '@/stores/useAuthStore.js'; // ★ Pinia 스토어 import
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
@@ -21,21 +21,8 @@ const router = createRouter({
 
 // 전역 네비게이션 가드
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore();
 
-  // ★ 로그인 상태 복원 로직 추가
-  // 페이지 새로고침 시 Pinia 스토어가 초기화되므로,
-  // localStorage의 토큰을 사용하여 로그인 상태를 먼저 복원합니다.
-  if (!authStore.accessToken && localStorage.getItem('accessToken')) {
-    try {
-      await authStore.restoreAuth();
-    } catch (e) {
-      // 토큰이 유효하지 않으면 로그인 페이지로 리다이렉트
-      console.error("Failed to restore auth state, redirecting to login.");
-      authStore.clearLoginInfo();
-      return next('/login');
-    }
-  }
+  const authStore = useAuthStore();
 
   const isLoggedIn = !!authStore.accessToken;
   console.log("beforeEach - isLoggedIn:", isLoggedIn, "accessToken:", authStore.accessToken)

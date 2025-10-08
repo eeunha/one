@@ -87,7 +87,7 @@ export const useAuthStore = defineStore('auth', () => {
     };
 
     const restoreAuth = async () => {
-        console.log('auth.js');
+        console.log('useAuthStore.js');
         console.log('localStorage: ', localStorage);
         const storedAT = localStorage.getItem('accessToken');
         console.log('storedAT: ', storedAT);
