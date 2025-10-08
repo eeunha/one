@@ -58,9 +58,6 @@ public class UserService implements UserDetailsService {
         // 3. 리프레시 토큰을 DB에 저장합니다.
         // 이는 토큰 재발급 시 사용자의 유효성을 확인하는 데 필요합니다.
         user.setRefreshToken(refreshToken);
-//        user.setRefreshTokenExpiry(LocalDateTime.now().plusWeeks(2));
-//        user.setRefreshTokenExpiry(LocalDateTime.now().plusSeconds(10));
-//        user.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7)); // 7일
         user.setRefreshTokenExpiry(LocalDateTime.now().plusSeconds(refreshTokenValidityInSeconds)); // 1일 20초 (초)
 
         userRepository.save(user);

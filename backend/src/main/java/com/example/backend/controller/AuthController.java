@@ -59,9 +59,6 @@ public class AuthController {
 
         // 2. 리프레시 토큰을 HttpOnly 쿠키에 담아 반환합니다.
         // 이 쿠키는 자바스크립트로 접근할 수 없어 XSS 공격에 안전합니다.
-//        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), 60 * 60 * 24 * 7);
-//        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), 10);
-//        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), 60 * 60 * 24 + 20);
         cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), refreshTokenValidityInSeconds); // 1일 20초 (s)
 
         // 3. 응답 바디에는 리프레시 토큰을 제외한 액세스 토큰과 프로필 정보만 담아 반환합니다.

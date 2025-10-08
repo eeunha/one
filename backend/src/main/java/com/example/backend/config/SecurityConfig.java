@@ -40,9 +40,6 @@ public class SecurityConfig {
                 // 4. JWT 필터를 추가합니다.
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/auth/google/login", "/auth/**").permitAll()
-//                        // preflight 요청에 대한 OPTIONS 메서드를 허용합니다.
-//                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         // 1. Refresh 및 로그인/가입은 인증 없이 허용 (가장 높은 권한)
                         .requestMatchers("/auth/refresh", "/auth/google/login").permitAll()
 
