@@ -8,6 +8,7 @@ import com.example.backend.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,9 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 public class AuthService {
+
+    @Value("${jwt.refresh-token-validity-in-seconds}")
+    private long refreshTokenValidityInSeconds;
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
@@ -75,13 +79,15 @@ public class AuthService {
             String newRefreshToken = jwtUtil.generateRefreshToken(user.getId());
             user.setRefreshToken(newRefreshToken);
 //            user.setRefreshTokenExpiry(LocalDateTime.now().plusSeconds(10)); // 리프레시토큰 기간 10초
-            user.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7)); // 리프레시토큰 기간 7일
+//            user.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7)); // 리프레시토큰 기간 7일
+            user.setRefreshTokenExpiry(LocalDateTime.now().plusSeconds(refreshTokenValidityInSeconds)); // 리프레시토큰 기간 1일 20초 (초)
             userRepository.save(user);
 
             // 쿠키에 새 Refresh Token 설정
-            cookieUtil.addJwtCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 7); // 7일 (s)
+//            cookieUtil.addJwtCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 7); // 7일 (s)
 //            cookieUtil.addJwtCookie(response, "refreshToken", refreshToken, 10); // 10초 (s)
 //            cookieUtil.addJwtCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 + 20); // 1일 20초 (s)
+            cookieUtil.addJwtCookie(response, "refreshToken", refreshToken, refreshTokenValidityInSeconds); // 1일 20초 (s)
         }
 
         return newAccessToken;
@@ -105,7 +111,7 @@ public class AuthService {
 
     // 8. Refresh Token 만료 임박 체크 (예: 남은 기간 1일 이하)
     private boolean isRefreshTokenExpiresSoon(User user) {
-        System.out.println("isRefreshTokenExpiresSoon 메소드 진입");
+        System.out.println("isRefreshTokenExpiresSoon 메소드 진입 - 토큰 만료 임박 체크");
         return ChronoUnit.DAYS.between(LocalDateTime.now(), user.getRefreshTokenExpiry()) <= 1;
     }
 }

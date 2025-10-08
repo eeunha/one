@@ -15,39 +15,41 @@ import java.util.Date;
 public class JwtUtil {
 
     private final SecretKey secretKey;
-    private final long accessTokenValidity;
-    private final long refreshTokenValidity;
+    private final long accessTokenValidityInSeconds;
+    private final long refreshTokenValidityInSeconds;
 
     public JwtUtil(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.access-token-expiration}") long accessTokenValidity,
-            @Value("${jwt.refresh-token-expiration}") long refreshTokenValidity
+//            @Value("${jwt.access-token-expiration}") long accessTokenValidity,
+//            @Value("${jwt.refresh-token-expiration}") long refreshTokenValidity
+            @Value("${jwt.access-token-validity-in-seconds}") long accessTokenValidityInSeconds,
+            @Value("${jwt.refresh-token-validity-in-seconds}") long refreshTokenValidityInSeconds
     ) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.accessTokenValidity = accessTokenValidity;
-        this.refreshTokenValidity = refreshTokenValidity;
+        this.accessTokenValidityInSeconds = accessTokenValidityInSeconds;
+        this.refreshTokenValidityInSeconds = refreshTokenValidityInSeconds;
     }
 
     public String generateAccessToken(Long id) {
         System.out.println("JwtUtil - generateAccessToken 메소드 진입");
-        System.out.println("accessTokenValidity: " + accessTokenValidity);
+        System.out.println("accessTokenValidity: " + accessTokenValidityInSeconds);
         return Jwts.builder()
                 // id를 String으로 변환하여 subject에 담습니다.
                 .setSubject(String.valueOf(id)) //JWT의 주체. 사용자 식별자
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidity))
+                .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidityInSeconds * 1000))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String generateRefreshToken(Long id) {
         System.out.println("JwtUtil - generateRefreshToken 메소드 진입");
-        System.out.println("refreshTokenValidity: " + refreshTokenValidity);
+        System.out.println("refreshTokenValidity: " + refreshTokenValidityInSeconds);
         return Jwts.builder()
                 // id를 String으로 변환하여 subject에 담습니다.
                 .setSubject(String.valueOf(id))
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity))
+                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidityInSeconds * 1000))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }

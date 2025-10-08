@@ -9,6 +9,7 @@ import com.example.backend.service.UserService;
 import com.example.backend.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -21,6 +22,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    @Value("${jwt.refresh-token-validity-in-seconds}")
+    private long refreshTokenValidityInSeconds;
 
     private final OAuthService oAuthService;
     private final UserService userService;
@@ -55,9 +59,10 @@ public class AuthController {
 
         // 2. 리프레시 토큰을 HttpOnly 쿠키에 담아 반환합니다.
         // 이 쿠키는 자바스크립트로 접근할 수 없어 XSS 공격에 안전합니다.
-        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), 60 * 60 * 24 * 7);
+//        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), 60 * 60 * 24 * 7);
 //        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), 10);
 //        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), 60 * 60 * 24 + 20);
+        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), refreshTokenValidityInSeconds); // 1일 20초 (s)
 
         // 3. 응답 바디에는 리프레시 토큰을 제외한 액세스 토큰과 프로필 정보만 담아 반환합니다.
         fullResponse.setRefreshToken(null);

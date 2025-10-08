@@ -5,6 +5,7 @@ import com.example.backend.dto.JwtAndProfileResponseDTO;
 import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,6 +16,9 @@ import java.util.Collections;
 
 @Service
 public class UserService implements UserDetailsService {
+
+    @Value("${jwt.refresh-token-validity-in-seconds}")
+    private long refreshTokenValidityInSeconds;
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
@@ -56,7 +60,9 @@ public class UserService implements UserDetailsService {
         user.setRefreshToken(refreshToken);
 //        user.setRefreshTokenExpiry(LocalDateTime.now().plusWeeks(2));
 //        user.setRefreshTokenExpiry(LocalDateTime.now().plusSeconds(10));
-        user.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7)); // 7일
+//        user.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7)); // 7일
+        user.setRefreshTokenExpiry(LocalDateTime.now().plusSeconds(refreshTokenValidityInSeconds)); // 1일 20초 (초)
+
         userRepository.save(user);
 
         // 4. 토큰과 프로필 정보를 DTO에 담아서 반환합니다.
