@@ -14,12 +14,43 @@ const instance = axios.create({
 // 요청 인터셉터
 // 모든 API 요청을 보내기 전에 Pinia 스토어에서 액세스 토큰을 가져와 Authorization 헤더에 자동으로 추가
 instance.interceptors.request.use(
-    (config) => {
+    async (config) => {
         const authStore = useAuthStore();
         const accessToken = authStore.accessToken;
 
         console.log('axios.js - 요청 인터셉터 진입');
 
+        // ⭐ 1. 갱신 중인 경우: 갱신이 완료될 때까지 대기 ⭐
+        if (authStore.isRefreshing) {
+            // Promise를 사용하여 갱신이 완료될 때까지 요청을 대기시킵니다.
+            // 여기서는 요청 인터셉터가 토큰 갱신을 주도하므로, 간단히 현재 토큰으로 요청을 리턴합니다.
+            // (응답 인터셉터가 401을 받아 재시도해 줄 것이므로 안전합니다.)
+            if (accessToken) {
+                config.headers.Authorization = `Bearer ${accessToken}`;
+            }
+            return config;
+        }
+
+        // 2. AT가 있고, 만료 임박했다면 사전 갱신 시도
+        // (가정: isTokenExpiredOrNear는 authStore의 getter나 함수입니다.)
+        if (accessToken && authStore.isTokenExpiredOrNear(accessToken, 5)) {
+            console.log('요청 인터셉터: AT 만료 임박 감지, 사전 갱신 시도');
+
+            try {
+                // refreshTokensWithServer는 새로운 AT를 받아 setAccessToken까지 처리한다고 가정
+                const newAccessToken = await authStore.refreshTokensWithServer();
+                config.headers.Authorization = `Bearer ${newAccessToken}`;
+                return config; // 새 토큰으로 요청 실행
+            } catch (error) {
+                // RT 만료 등으로 갱신 실패 시
+                console.error("요청 인터셉터: 사전 갱신 실패, 로그아웃");
+                authStore.clearLoginInfo();
+                router.push('/login');
+                return Promise.reject(error); // 요청 거부
+            }
+        }
+
+        // 3. AT가 유효하면 기존 로직 수행
         if (accessToken) {
             config.headers.Authorization = `Bearer ${accessToken}`;
         }
@@ -43,10 +74,17 @@ instance.interceptors.response.use(
         const originalRequest = error.config;
         const authStore = useAuthStore(); // Store 인스턴스를 미리 가져옵니다.
 
+        // ⭐⭐ FIX: 로그아웃 요청 자체는 갱신 로직을 타지 않도록 즉시 종료 ⭐⭐
+        // 로그아웃 요청(예: /auth/logout)이 401을 받더라도 갱신하지 않고 즉시 종료합니다.
+        if (originalRequest.url.includes('/auth/logout')) {
+            console.log('axios.js - 로그아웃 요청 중 에러 발생: 갱신 무시');
+            return Promise.reject(error);
+        }
+
         // ⭐⭐ 무한 루프 방지 로직 (가장 중요) ⭐⭐
         // 갱신 요청(URL이 '/auth/refresh'인 요청) 자체가 에러를 반환하면,
         // 이는 Refresh Token마저 만료되었다는 뜻이므로 즉시 로그아웃 처리하고 종료합니다.
-        if (originalRequest.url === '/auth/refresh') {
+        if (originalRequest.url.includes('/auth/refresh') && error.response.status === 401) {
             console.log('axios.js - Refresh 요청 실패: 최종 로그아웃 처리');
             authStore.clearLoginInfo();
             router.push('/login');

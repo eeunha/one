@@ -8,6 +8,9 @@ export const useAuthStore = defineStore('auth', () => {
     const accessToken = ref(null);
     const user = ref(null);
 
+    // ⭐⭐ FIX: 토큰 갱신 중 상태 플래그 추가 ⭐⭐
+    const isRefreshing = ref(false);
+
     // 액션 (Actions)
     const setLoginInfo = (token, userData) => {
         accessToken.value = token;
@@ -55,6 +58,10 @@ export const useAuthStore = defineStore('auth', () => {
      */
     const refreshTokensWithServer = async () => {
         // 🚨 RT는 HTTP-only 쿠키에 담겨있어 요청 시 자동으로 전송됩니다.
+
+        // 1. 갱신 시작 시 락 설정
+        isRefreshing.value = true; // ⭐ 추가 ⭐
+
         try {
             // 백엔드 /auth/refresh 엔드포인트 호출
             const response = await axios.post('/auth/refresh');
@@ -66,11 +73,13 @@ export const useAuthStore = defineStore('auth', () => {
             localStorage.setItem('accessToken', newAT);
 
             return newAT;
-
         } catch (error) {
             // RT 만료 등으로 갱신 실패 시
             console.error("Refresh token validation failed:", error);
             throw error;
+        } finally {
+            // 2. 갱신 완료(성공/실패) 시 락 해제
+            isRefreshing.value = false; // ⭐ 추가 ⭐
         }
     };
 
@@ -129,6 +138,7 @@ export const useAuthStore = defineStore('auth', () => {
     return {
         accessToken,
         user,
+        isRefreshing,
         setLoginInfo,
         setAccessToken,
         clearLoginInfo,
