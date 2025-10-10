@@ -1,16 +1,18 @@
 package com.example.backend.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @MappedSuperclass
 @Getter
-public abstract class BaseTime {
+@NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
+public abstract class BaseTimeEntity {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
