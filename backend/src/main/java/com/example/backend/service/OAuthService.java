@@ -71,8 +71,9 @@ public class OAuthService {
 
         String email = (String) userInfo.get("email");
         String name = (String) userInfo.get("name");
+        String googleSnsId = (String) userInfo.get("id");
 
         // 3. UserService를 호출하여 두 개의 JWT 토큰을 Map 형태로 받아서 반환
-        return userService.processGoogleLogin(email, name);
+        return userService.processGoogleLogin(email, name, googleSnsId);
     }
 }

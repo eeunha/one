@@ -1,9 +1,7 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +10,9 @@ import java.util.List;
 @Table(name = "posts")
 @Getter
 @Setter
-@NoArgsConstructor
+@Builder // ⭐️ Builder 패턴 적용
+@AllArgsConstructor(access = AccessLevel.PRIVATE) // Builder 사용을 위한 private 전체 생성자
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA를 위한 protected 무인자 생성자
 public class Post extends BaseTimeEntity {
 
     @Id

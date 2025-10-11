@@ -34,19 +34,22 @@ public class UserService implements UserDetailsService {
      *
      * @param email Google로부터 받은 사용자의 이메일
      * @param name  Google로부터 받은 사용자의 이름
+     * @param snsId Google로부터 받은 사용자의 고유 ID (sns_id로 저장)
      * @return 액세스 토큰, 리프레시 토큰 및 사용자 정보가 담긴 DTO
      */
-    public JwtAndProfileResponseDTO processGoogleLogin(String email, String name) {
+    public JwtAndProfileResponseDTO processGoogleLogin(String email, String name, String snsId) {
 
         System.out.println("UserService - processGoogleLogin 진입");
         
         // 1. 이메일로 기존 사용자가 있는지 조회합니다. 없으면 새로 생성합니다.
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
-                    User newUser = new User();
-                    newUser.setEmail(email);
-                    newUser.setName(name);
-                    newUser.setSnsProvider("google");
+                    User newUser = User.builder()
+                            .email(email)
+                            .name(name)
+                            .snsProvider("google")
+                            .snsId(snsId)
+                            .build();
                     return userRepository.save(newUser);
                 });
 
@@ -58,7 +61,7 @@ public class UserService implements UserDetailsService {
         // 3. 리프레시 토큰을 DB에 저장합니다.
         // 이는 토큰 재발급 시 사용자의 유효성을 확인하는 데 필요합니다.
         user.setRefreshToken(refreshToken);
-        user.setRefreshTokenExpiry(LocalDateTime.now().plusSeconds(refreshTokenValidityInSeconds)); // 1일 20초 (초)
+        user.setRefreshTokenExpiry(LocalDateTime.now().plusSeconds(refreshTokenValidityInSeconds));
 
         userRepository.save(user);
 

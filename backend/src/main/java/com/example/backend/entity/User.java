@@ -1,9 +1,7 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,7 +15,9 @@ import java.util.List;
         })
 @Getter
 @Setter
-@NoArgsConstructor
+@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE) // ⭐️ Builder 사용을 위해 추가 (private)
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // ⭐️ 수정: protected 접근 권한 명시
 public class User extends BaseTimeEntity {
 
     @Id
@@ -60,6 +60,7 @@ public class User extends BaseTimeEntity {
         this.email = email;
         this.password = password; // 실제로는 암호화된 비밀번호가 전달되어야 함
         this.name = name;
+        this.role = "ROLE_USER";
     }
 
     // 소셜 사용자 업데이트 메서드 (토큰 업데이트 등)

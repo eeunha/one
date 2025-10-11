@@ -19,7 +19,6 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    //c
     @Transactional //CUD에 붙는다. 그래야 JPA의 변경 감지(Dirty Checking) 기능 활성화
     public Post createPost(Long authorId, String title, String content) {
 
@@ -29,11 +28,16 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException("작성자(User id: " + authorId + ")를 찾을 수 없습니다."));
 
         // 2. Post 엔티티 생성 및 저장
-        Post newPost = new Post(title, content, author);
+        Post newPost = Post.builder()
+                .title(title)
+                .content(content)
+                .author(author)
+                .viewCount(0)
+                .build();
+
         return postRepository.save(newPost);
     }
 
-    //r(목록)
     // === 3. 게시글 목록 조회 (Read - List) ===
     // readOnly = true 이므로 별도 @Transactional 필요 없음
     public List<Post> getAllPosts() {
@@ -43,7 +47,6 @@ public class PostService {
         return postRepository.findAll();
     }
 
-    //r(상세)
     // === 2. 게시글 상세 조회 (Read - Single) ===
     @Transactional // 조회수 증가(쓰기)가 있으므로 트랜잭션 설정
     public Post getPostDetail(Long postId) {
@@ -60,7 +63,7 @@ public class PostService {
         return post;
     }
 
-    //u
+    // === 게시글 수정 ===
     @Transactional
     public Post updatePost(Long postId, Long userId, String newTitle, String newContent) {
 
