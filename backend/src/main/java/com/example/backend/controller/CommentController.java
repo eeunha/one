@@ -4,7 +4,6 @@ import com.example.backend.dto.CommentRequestDTO;
 import com.example.backend.dto.CommentResponseDTO;
 import com.example.backend.entity.Comment;
 import com.example.backend.service.CommentService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -29,12 +27,9 @@ public class CommentController {
 
         Long userId = Long.valueOf(principal.getName());
 
-        try {
-            Comment createdComment = commentService.createComment(postId, userId, request.getContent());
-            return new ResponseEntity<>(new CommentResponseDTO(createdComment), HttpStatus.CREATED); // 201 Created
-        } catch (EntityNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 Not Found
-        }
+        Comment createdComment = commentService.createComment(postId, userId, request.getContent());
+
+        return new ResponseEntity<>(new CommentResponseDTO(createdComment), HttpStatus.CREATED); // 201 Created
     }
 
     // === 2. 게시글별 댓글 목록 조회 (GET /api/posts/{postId}/comments) ===
@@ -43,12 +38,13 @@ public class CommentController {
         // 댓글이 없어도 빈 리스트 []를 반환하며 200 OK 처리합니다.
         List<Comment> comments = commentService.getCommentsByPost(postId);
 
+        // 삭제되지 않은 댓글만 필터링 후 Response DTO로 변환
         List<CommentResponseDTO> response = comments.stream()
                 .filter(c -> c.getDeletedAt() == null)
                 .map(CommentResponseDTO::new)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(response);// 200 OK
+        return ResponseEntity.ok(response); // 200 OK
     }
 
     // === 3. 댓글 수정 (PUT /api/posts/{postId}/comments/{commentId}) ===
@@ -57,14 +53,10 @@ public class CommentController {
 
         Long userId = Long.valueOf(principal.getName());
 
-        try {
-            Comment updatedComment = commentService.updateComment(commentId, userId, request.getContent());
-            return new ResponseEntity<>(new CommentResponseDTO(updatedComment), HttpStatus.OK); // 200 OK
-        } catch (EntityNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 Not Found (댓글이 없음)
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN); // 403 Forbidden (권한 없음)
-        }
+        // 예외 처리는 Global Handler로 위임 (권한 없음, 댓글 없음 등)
+        Comment updatedComment = commentService.updateComment(commentId, userId, request.getContent());
+
+        return new ResponseEntity<>(new CommentResponseDTO(updatedComment), HttpStatus.OK); // 200 OK
     }
 
     // === 4. 댓글 소프트 삭제 (DELETE /api/posts/{postId}/comments/{commentId}) ===
@@ -73,13 +65,9 @@ public class CommentController {
 
         Long userId = Long.valueOf(principal.getName());
 
-        try {
-            commentService.deleteSoftComment(commentId, userId);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204 No Content (성공적으로 삭제)
-        } catch (EntityNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 Not Found
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN); // 403 Forbidden
-        }
+        // 예외 처리는 Global Handler로 위임
+        commentService.deleteSoftComment(commentId, userId);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204 No Content (성공적으로 삭제)
     }
 }
