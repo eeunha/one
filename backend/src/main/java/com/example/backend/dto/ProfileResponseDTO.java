@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccessTokenAndProfileResponseDTO {
-    private String accessToken;
+public class ProfileResponseDTO {
+
     private Long id;
     private String name;
     private String email;

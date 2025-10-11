@@ -1,7 +1,8 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.AccessTokenAndProfileResponseDTO;
 import com.example.backend.dto.JwtAndProfileResponseDTO;
+import com.example.backend.dto.ProfileResponseDTO;
+import com.example.backend.entity.User;
 import com.example.backend.exception.RefreshTokenExpiredException;
 import com.example.backend.service.AuthService;
 import com.example.backend.service.OAuthService;
@@ -9,6 +10,7 @@ import com.example.backend.service.UserService;
 import com.example.backend.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import java.util.Map;
 // (인증 이후 상태 관리에 집중)
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor // ⭐️ final 필드를 주입받는 생성자를 자동으로 생성합니다.
 public class AuthController {
 
     @Value("${jwt.refresh-token-validity-in-seconds}")
@@ -30,13 +33,6 @@ public class AuthController {
     private final UserService userService;
     private final CookieUtil cookieUtil;
     private final AuthService authService;
-
-    public AuthController(OAuthService oAuthService, UserService userService, CookieUtil cookieUtil, AuthService authService) {
-        this.oAuthService = oAuthService;
-        this.userService = userService;
-        this.cookieUtil = cookieUtil;
-        this.authService = authService;
-    }
 
     /**
      * Google 로그인 후 프론트엔드에서 인증 코드를 보내는 API 엔드포인트
@@ -74,17 +70,21 @@ public class AuthController {
         
         try {
             // Spring Security의 Authentication 객체에서 사용자 ID 추출
-            // JwtUtil을 통해 토큰이 이미 검증된 상태이므로 별도의 유효성 검사는 불필요
             String userIdFromToken = authentication.getName(); // JWT 토큰의 subject(사용자 ID)를 가져옴
+            Long userId = Long.valueOf(userIdFromToken);
 
-            // 사용자 ID를 기반으로 DB에서 프로필 정보를 조회하고 새로운 토큰을 생성
-            AccessTokenAndProfileResponseDTO responseDto = userService.getProfileWithNewToken(userIdFromToken);
+            // 1. 사용자 ID를 기반으로 DB에서 프로필 정보를 조회합니다.
+            User user = userService.getUserByUserId(userId);
 
-            if (responseDto != null) {
-                return ResponseEntity.ok(responseDto); // 200 OK
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found"); // 404 Not Found
-            }
+            // 2. 응답 DTO를 구성합니다. (액세스 토큰은 응답에 포함하지 않음 - 기존 토큰 사용)
+            ProfileResponseDTO responseDto = new ProfileResponseDTO(
+                    user.getId(),
+                    user.getEmail(),
+                    user.getName()
+            );
+
+            return ResponseEntity.ok(responseDto); // 200 OK
+
         } catch (Exception e) {
             // 토큰이 유효하지 않거나 만료된 경우 Spring Security가 401을 처리함.
             // 하지만 예외 처리의 견고함을 위해 명시적인 에러 메시지를 반환

@@ -1,20 +1,23 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.AccessTokenAndProfileResponseDTO;
 import com.example.backend.dto.JwtAndProfileResponseDTO;
 import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.util.JwtUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService implements UserDetailsService {
 
     @Value("${jwt.refresh-token-validity-in-seconds}")
@@ -22,11 +25,6 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
-
-    public UserService(UserRepository userRepository, JwtUtil jwtUtil) {
-        this.userRepository = userRepository;
-        this.jwtUtil = jwtUtil;
-    }
 
     /**
      * 구글 로그인 처리를 담당합니다.
@@ -37,6 +35,7 @@ public class UserService implements UserDetailsService {
      * @param snsId Google로부터 받은 사용자의 고유 ID (sns_id로 저장)
      * @return 액세스 토큰, 리프레시 토큰 및 사용자 정보가 담긴 DTO
      */
+    @Transactional
     public JwtAndProfileResponseDTO processGoogleLogin(String email, String name, String snsId) {
 
         System.out.println("UserService - processGoogleLogin 진입");
@@ -60,9 +59,11 @@ public class UserService implements UserDetailsService {
 
         // 3. 리프레시 토큰을 DB에 저장합니다.
         // 이는 토큰 재발급 시 사용자의 유효성을 확인하는 데 필요합니다.
-        user.setRefreshToken(refreshToken);
-        user.setRefreshTokenExpiry(LocalDateTime.now().plusSeconds(refreshTokenValidityInSeconds));
-
+        // ⭐️ 개선: setter 대신 엔티티 비즈니스 메서드 사용
+        user.updateRefreshToken(
+                refreshToken,
+                LocalDateTime.now().plusSeconds(refreshTokenValidityInSeconds)
+        );
         userRepository.save(user);
 
         // 4. 토큰과 프로필 정보를 DTO에 담아서 반환합니다.
@@ -102,22 +103,4 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
     }
 
-    /**
-     * 유효한 토큰에서 받은 사용자 ID(String)로 프로필 정보와 새로운 토큰을 함께 조회합니다.
-     * @param userIdFromToken 유효한 토큰에서 추출한 사용자 ID (String)
-     * @return 프로필 정보와 새로운 토큰이 담긴 AccessTokenAndProfileResponseDTO
-     */
-    public AccessTokenAndProfileResponseDTO getProfileWithNewToken(String userIdFromToken) {
-
-        System.out.println("UserService - getProfileWithNewToken 메소드 진입");
-
-        try {
-            Long userId = Long.parseLong(userIdFromToken);
-            User user = getUserByUserId(userId);
-            String newAccessToken = jwtUtil.generateAccessToken(user.getId());
-            return new AccessTokenAndProfileResponseDTO(newAccessToken, user.getId(), user.getEmail(), user.getName());
-        } catch (NumberFormatException e) {
-            throw new RuntimeException("Invalid user ID format in token: " + userIdFromToken);
-        }
-    }
 }
