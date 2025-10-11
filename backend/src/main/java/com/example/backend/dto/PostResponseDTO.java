@@ -1,0 +1,38 @@
+package com.example.backend.dto;
+
+import com.example.backend.entity.Post;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Getter
+@NoArgsConstructor
+public class PostResponseDTO {
+
+    private Long postId;
+    private String title;
+    private String content;
+    private int viewCount;
+    private String authorName; // 작성자의 이름만 노출
+    private LocalDateTime createdAt;
+    private List<CommentResponseDTO> comments;
+
+    public PostResponseDTO(Post post) {
+        this.postId = post.getId();
+        this.title = post.getTitle();
+        this.content = post.getContent();
+        this.viewCount = post.getViewCount();
+        this.authorName = post.getAuthor().getName();
+        this.createdAt = post.getCreatedAt();
+
+        if (post.getComments() != null) {
+            this.comments = post.getComments().stream()
+                    .filter(c -> c.getDeletedAt() == null)
+                    .map(CommentResponseDTO::new)
+                    .collect(Collectors.toList());
+        }
+    }
+}

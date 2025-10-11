@@ -84,7 +84,7 @@ public class PostService {
 
     //d
     @Transactional
-    public void softDeletePost(Long postId, Long userId) {
+    public void deleteSoftPost(Long postId, Long userId) {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시글(Post ID: " + postId + ")을 찾을 수 없습니다."));

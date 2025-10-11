@@ -68,7 +68,7 @@ public class CommentService {
 
     // === 4. 댓글 소프트 삭제 (Delete) ===
     @Transactional
-    public void softDeleteComment(Long commentId, Long userId) {
+    public void deleteSoftComment(Long commentId, Long userId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("댓글(Comment ID: " + commentId + ")을 찾을 수 없습니다."));
 
