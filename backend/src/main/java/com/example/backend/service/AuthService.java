@@ -3,28 +3,23 @@ package com.example.backend.service;
 import com.example.backend.entity.User;
 import com.example.backend.exception.RefreshTokenExpiredException;
 import com.example.backend.repository.UserRepository;
-import com.example.backend.util.CookieUtil;
 import com.example.backend.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AuthService {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
-    private final CookieUtil cookieUtil;
-
-    public AuthService(UserRepository userRepository, JwtUtil jwtUtil, CookieUtil cookieUtil) {
-        this.userRepository = userRepository;
-        this.jwtUtil = jwtUtil;
-        this.cookieUtil = cookieUtil;
-    }
 
     /**
      * 로그아웃: DB에서 사용자의 리프레시 토큰을 무효화합니다.
