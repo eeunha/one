@@ -6,6 +6,7 @@ import com.example.backend.repository.UserRepository;
 import com.example.backend.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -55,8 +57,8 @@ public class UserService implements UserDetailsService {
 
         // 2. JWT 토큰을 생성합니다.
         // JWT의 주체(subject)는 보안을 위해 사용자 ID를 사용합니다.
-        String accessToken = jwtUtil.generateAccessToken(user.getId());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getId());
+        String accessToken = jwtUtil.generateAccessToken(user);
+        String refreshToken = jwtUtil.generateRefreshToken(user);
 
         // 3. 리프레시 토큰을 DB에 저장합니다.
         // 이는 토큰 재발급 시 사용자의 유효성을 확인하는 데 필요합니다.
@@ -84,11 +86,16 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId));
 
+        // ⭐️ User 객체에서 Role(권한) 정보를 가져와 SimpleGrantedAuthority로 변환합니다.
+        // 현재는 단일 Role(String) 필드가 있다고 가정하고 List로 변환합니다.
+        List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getRole()));
+
         // User 객체를 UserDetails로 변환하여 반환
         return new org.springframework.security.core.userdetails.User(
                 String.valueOf(user.getId()), // UserDetails의 username은 고유 식별자(여기서는 ID)로 사용
                 "", // 비밀번호는 없으므로 빈 문자열
-                Collections.emptyList() // 권한(roles) 정보는 비워둡니다
+//                Collections.emptyList() // 권한(roles) 정보는 비워둡니다
+                authorities // ⭐️ 권한(Role) 정보를 authorities에 담아 전달합니다.
         );
     }
 
