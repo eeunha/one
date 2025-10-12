@@ -48,6 +48,7 @@ public class UserService implements UserDetailsService {
                             .name(name)
                             .snsProvider("google")
                             .snsId(snsId)
+                            .role("ROLE_USER")
                             .build();
                     return userRepository.save(newUser);
                 });
