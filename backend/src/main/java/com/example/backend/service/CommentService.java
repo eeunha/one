@@ -80,4 +80,24 @@ public class CommentService {
         // 2. 소프트 삭제 처리 (DB에서 실제 데이터 삭제는 안 함)
         comment.markAsDeleted(); // BaseTime 엔티티에 정의된 메서드 호출
     }
+
+    // === ⭐️ Spring Security SpEL에서 호출할 게시글 소유자 확인 메서드 ===
+    /**
+     * 특정 댓글의 작성자가 현재 인증된 사용자와 일치하는지 확인합니다.
+     * @param commentId 확인할 댓글 ID
+     * @param principalName 현재 인증된 사용자의 ID (String 형태)
+     * @return 일치하면 true, 아니면 false
+     */
+    public boolean isCommentOwner(Long commentId, String principalName) {
+
+        // 1. Long.valueOf(principalName)으로 사용자 ID(Long) 변환
+        Long userId = Long.valueOf(principalName);
+
+        // 2. postId로 게시글 조회
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("댓글(Post ID: " + commentId + ")을 찾을 수 없습니다."));
+
+        // 3. 댓글 작성자 ID와 사용자 ID를 비교하여 true 또는 false 반환
+        return userId.equals(comment.getAuthor().getId());
+    }
 }

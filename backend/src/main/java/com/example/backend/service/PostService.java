@@ -103,4 +103,24 @@ public class PostService {
         // 3. 연관된 댓글도 함께 소프트 삭제 처리 (선택 사항, 비즈니스 정책에 따라 다름)
         // post.getComments().forEach(Comment::markAsDeleted);
     }
+
+    // === ⭐️ Spring Security SpEL에서 호출할 게시글 소유자 확인 메서드 ===
+    /**
+     * 특정 게시글의 작성자가 현재 인증된 사용자와 일치하는지 확인합니다.
+     * @param postId 확인할 게시글 ID
+     * @param principalName 현재 인증된 사용자의 ID (String 형태)
+     * @return 일치하면 true, 아니면 false
+     */
+    public boolean isPostOwner(Long postId, String principalName) {
+
+        // 1. Long.valueOf(principalName)으로 사용자 ID(Long) 변환
+        Long userId = Long.valueOf(principalName);
+
+        // 2. postId로 게시글 조회
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("게시글(Post ID: " + postId + ")을 찾을 수 없습니다."));
+
+        // 3. 게시글 작성자 ID와 사용자 ID를 비교하여 true 또는 false 반환
+        return userId.equals(post.getAuthor().getId());
+    }
 }

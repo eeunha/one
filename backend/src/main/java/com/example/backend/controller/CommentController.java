@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -61,6 +62,7 @@ public class CommentController {
 
     // === 4. 댓글 소프트 삭제 (DELETE /api/posts/{postId}/comments/{commentId}) ===
     @DeleteMapping("/{commentId}")
+    @PreAuthorize("hasRole('ADMIN') or @commentService.isCommentOwner(#commentId, principal.name)")
     public ResponseEntity<Void> deleteSoftComment (@PathVariable Long commentId, Principal principal) {
 
         Long userId = Long.valueOf(principal.getName());

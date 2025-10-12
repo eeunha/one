@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -73,7 +74,9 @@ public class PostController {
     }
 
     // === 5. 게시글 소프트 삭제 (DELETE /api/posts/{postId}) ===
+    // ⭐️ 수정: 관리자 권한(ADMIN)이거나 게시글의 작성자일 경우만 허용
     @DeleteMapping("/{postId}")
+    @PreAuthorize("hasRole('ADMIN') or @postService.isPostOwner(#postId, principal.name)")
     public ResponseEntity<Void> deleteSoftPost(@PathVariable Long postId, Principal principal) {
 
         // DELETE 요청의 Body 사용은 RESTful 표준에 완전히 맞지는 않지만, 테스트 편의를 위해 사용
