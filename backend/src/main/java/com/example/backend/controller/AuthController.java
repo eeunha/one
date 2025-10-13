@@ -78,8 +78,9 @@ public class AuthController {
             // 2. 응답 DTO를 구성합니다. (액세스 토큰은 응답에 포함하지 않음 - 기존 토큰 사용)
             ProfileResponseDTO responseDto = new ProfileResponseDTO(
                     user.getId(),
+                    user.getName(),
                     user.getEmail(),
-                    user.getName()
+                    user.getRole()
             );
 
             return ResponseEntity.ok(responseDto); // 200 OK

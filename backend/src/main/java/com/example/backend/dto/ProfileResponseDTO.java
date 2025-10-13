@@ -14,4 +14,5 @@ public class ProfileResponseDTO {
     private Long id;
     private String name;
     private String email;
+    private String role;
 }
