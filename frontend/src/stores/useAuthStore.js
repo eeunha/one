@@ -1,14 +1,14 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import axios from "@/utils/axios.js";
-import { jwtDecode } from "jwt-decode";
+import {defineStore} from 'pinia';
+import {ref} from 'vue';
+import {jwtDecode} from "jwt-decode";
+import {AuthService} from "@/services/authService.js"
 
 export const useAuthStore = defineStore('auth', () => {
     // 상태 (State)
     const accessToken = ref(null);
     const user = ref(null);
 
-    // ⭐⭐ FIX: 토큰 갱신 중 상태 플래그 추가 ⭐⭐
+    // 토큰 갱신 중 상태 플래그
     const isRefreshing = ref(false);
 
     // 액션 (Actions)
@@ -60,14 +60,11 @@ export const useAuthStore = defineStore('auth', () => {
         // 🚨 RT는 HTTP-only 쿠키에 담겨있어 요청 시 자동으로 전송됩니다.
 
         // 1. 갱신 시작 시 락 설정
-        isRefreshing.value = true; // ⭐ 추가 ⭐
+        isRefreshing.value = true;
 
         try {
-            // 백엔드 /auth/refresh 엔드포인트 호출
-            const response = await axios.post('/auth/refresh');
-
-            // 서버 응답에서 새로운 AT 추출
-            const newAT = response.data.accessToken;
+            // ⭐️ Service 호출 ⭐️
+            const newAT = await AuthService.refreshTokens();
 
             // 갱신 성공 시, 새로운 AT를 localStorage에 저장
             localStorage.setItem('accessToken', newAT);
@@ -79,7 +76,7 @@ export const useAuthStore = defineStore('auth', () => {
             throw error;
         } finally {
             // 2. 갱신 완료(성공/실패) 시 락 해제
-            isRefreshing.value = false; // ⭐ 추가 ⭐
+            isRefreshing.value = false;
         }
     };
 
@@ -87,12 +84,9 @@ export const useAuthStore = defineStore('auth', () => {
      * 유효한 AT를 사용하여 사용자 프로필 정보를 서버에서 가져옵니다.
      */
     const fetchUserProfile = async () => {
-        // 이미 유효한 AT가 Pinia 상태에 설정되어 있고, axios 인터셉터가 헤더에 담아줍니다.
-        // 이 요청은 403이 발생할 가능성이 거의 없습니다 (AT 만료는 이미 사전에 처리됨).
-        const response = await axios.get('/auth/profile');
-
-        // ★★★ FIX: 응답으로 받은 사용자 데이터를 user.value에 저장합니다.
-        user.value = response.data;
+        // ⭐️ Service 호출 ⭐️
+        // Store는 받은 데이터를 상태에 저장하는 역할만 수행합니다. (Store의 책임)
+        user.value = await AuthService.fetchUserProfile();
     };
 
     const restoreAuth = async () => {
