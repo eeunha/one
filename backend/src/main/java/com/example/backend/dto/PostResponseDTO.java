@@ -12,16 +12,16 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class PostResponseDTO {
 
-    private Long postId;
+    private Long id;
     private String title;
     private String content;
     private int viewCount;
-    private String authorName; // 작성자의 이름만 노출
+    private String authorName;
     private LocalDateTime createdAt;
     private List<CommentResponseDTO> comments;
 
     public PostResponseDTO(Post post) {
-        this.postId = post.getId();
+        this.id = post.getId();
         this.title = post.getTitle();
         this.content = post.getContent();
         this.viewCount = post.getViewCount();

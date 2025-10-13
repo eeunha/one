@@ -28,6 +28,11 @@ const goToWrite = () => {
  * @param {number} id - 게시글 ID
  */
 const goToDetail = (id) => {
+  // ⭐ FIX: ID가 유효한지 먼저 확인합니다. ⭐
+  if (!id) {
+    console.error("게시글 ID가 유효하지 않아 상세 페이지로 이동할 수 없습니다. Post ID:", id);
+    return;
+  }
   // 라우터의 params를 사용하여 게시글 ID를 동적 라우트로 전달합니다.
   router.push({ name:'BoardDetail', params: { id: id } });
 };
@@ -89,8 +94,9 @@ const formatDate = (dateString) => {
 
           <!-- 작성자 및 조회수 -->
           <div class="flex justify-between text-xs text-gray-500 mt-2">
-            <span>작성자: {{ post.author || '익명' }}</span>
-            <span>조회수: {{ post.views || 0 }}</span>
+            <span>게시글번호: {{ post.id || '게시글번호' }}</span>
+            <span>작성자: {{ post.authorName || '익명' }}</span>
+            <span>조회수: {{ post.viewCount || 0 }}</span>
           </div>
         </div>
       </template>
