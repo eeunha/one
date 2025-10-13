@@ -13,6 +13,10 @@ import java.util.List;
 @Builder // ⭐️ Builder 패턴 적용
 @AllArgsConstructor(access = AccessLevel.PRIVATE) // Builder 사용을 위한 private 전체 생성자
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA를 위한 protected 무인자 생성자
+// Soft Delete 구현: 실제 DELETE 대신 deleted_at을 업데이트
+@org.hibernate.annotations.SQLDelete(sql = "UPDATE posts SET deleted_at = NOW() WHERE id = ?")
+// ⭐ 핵심: 쿼리 실행 시 이 조건이 자동으로 추가되어 삭제된 레코드를 제외합니다. ⭐
+@org.hibernate.annotations.Where(clause = "deleted_at IS NULL")
 public class Post extends BaseTimeEntity {
 
     @Id
