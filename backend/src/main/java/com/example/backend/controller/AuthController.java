@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.JwtAndProfileResponseDTO;
+import com.example.backend.dto.LoginResponseDTO;
+import com.example.backend.dto.LoginResultWrapper;
 import com.example.backend.dto.ProfileResponseDTO;
 import com.example.backend.entity.User;
 import com.example.backend.exception.RefreshTokenExpiredException;
@@ -41,25 +42,23 @@ public class AuthController {
      * @return JWT와 사용자 프로필 정보가 담긴 DTO
      */
     @PostMapping("/google/login")
-    public ResponseEntity<JwtAndProfileResponseDTO> googleLogin(
+    public ResponseEntity<LoginResponseDTO> googleLogin(
             @RequestBody Map<String, String> requestBody, HttpServletResponse response
     ) {
         String code = requestBody.get("code");
         
         System.out.println("googleLogin 메소드 진입");
 
-        // 1. OAuthService를 호출하여 모든 JWT와 프로필 정보를 받습니다.
-        JwtAndProfileResponseDTO fullResponse = oAuthService.getJwtAndProfileResponse(code);
+        // 1. 서비스로부터 Wrapper 객체를 받습니다.
+        LoginResultWrapper resultWrapper = oAuthService.getJwtAndProfileResponse(code);
 
-        System.out.println("로그인 후 refresh: " + fullResponse.getRefreshToken());
+        System.out.println("로그인 후 refresh: " + resultWrapper.getRefreshToken());
 
-        // 2. 리프레시 토큰을 HttpOnly 쿠키에 담아 반환합니다.
-        // 이 쿠키는 자바스크립트로 접근할 수 없어 XSS 공격에 안전합니다.
-        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), refreshTokenValidityInSeconds); // 1일 20초 (s)
+        // 2. Wrapper에서 RT를 꺼내 HttpOnly 쿠키에 담아 헤더로 보냅니다.
+        cookieUtil.addJwtCookie(response, "refreshToken", resultWrapper.getRefreshToken(), refreshTokenValidityInSeconds); // 1일 20초 (s)
 
-        // 3. 응답 바디에는 리프레시 토큰을 제외한 액세스 토큰과 프로필 정보만 담아 반환합니다.
-        fullResponse.setRefreshToken(null);
-        return ResponseEntity.ok(fullResponse);
+        // 3. Wrapper에서 응답 DTO를 꺼내 바디로 반환합니다.
+        return ResponseEntity.ok(resultWrapper.getLoginResponseDTO());
     }
 
     // 새로고침 시 사용자 정보를 복구하는 API

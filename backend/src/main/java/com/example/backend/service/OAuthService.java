@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.JwtAndProfileResponseDTO;
+import com.example.backend.dto.LoginResponseDTO;
+import com.example.backend.dto.LoginResultWrapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -37,7 +38,7 @@ public class OAuthService {
      * @param code Google에서 받은 인증 코드
      * @return JWT와 프로필 정보가 담긴 DTO
      */
-    public JwtAndProfileResponseDTO getJwtAndProfileResponse(String code) {
+    public LoginResultWrapper getJwtAndProfileResponse(String code) {
         
         System.out.println("OAuthService - getJwtAndProfileResponse 진입");
         

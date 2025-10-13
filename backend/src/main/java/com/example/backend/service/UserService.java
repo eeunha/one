@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.JwtAndProfileResponseDTO;
+import com.example.backend.dto.LoginResponseDTO;
+import com.example.backend.dto.LoginResultWrapper;
 import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.util.JwtUtil;
@@ -38,7 +39,7 @@ public class UserService implements UserDetailsService {
      * @return 액세스 토큰, 리프레시 토큰 및 사용자 정보가 담긴 DTO
      */
     @Transactional
-    public JwtAndProfileResponseDTO processGoogleLogin(String email, String name, String snsId) {
+    public LoginResultWrapper processGoogleLogin(String email, String name, String snsId) {
 
         System.out.println("UserService - processGoogleLogin 진입");
         
@@ -69,11 +70,13 @@ public class UserService implements UserDetailsService {
         );
         userRepository.save(user);
 
+        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(accessToken, user.getId(), user.getEmail(), user.getName(), user.getRole());
+
         // 4. 토큰과 프로필 정보를 DTO에 담아서 반환합니다.
         // 이 DTO는 AuthController에서 사용됩니다.
 
         // 쿠키를 통해 컨트롤러에서 브라우저에 전달
-        return new JwtAndProfileResponseDTO(accessToken, refreshToken, user.getId(), user.getEmail(), user.getName());
+        return new LoginResultWrapper(loginResponseDTO, refreshToken);
     }
 
     @Override
