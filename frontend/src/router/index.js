@@ -53,24 +53,34 @@ router.beforeEach(async (to, from, next) => {
 
   const authStore = useAuthStore();
 
-  const isLoggedIn = !!authStore.accessToken;
-  console.log("beforeEach - isLoggedIn:", isLoggedIn, "accessToken:", authStore.accessToken)
+  console.log("beforeEach");
 
-  // 인증이 필요한 페이지에 접근했고, 로그인 상태가 아닌 경우
-  if (to.meta.requiresAuth && !isLoggedIn) {
-    const confirmLogin = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?');
-    if (confirmLogin) {
-      next('/login');
-    } else {
-      next('/');
+  // 인증이 필요한 페이지에 접근 시
+  if (to.meta.requiresAuth) {
+
+    // Pinia 상태에 인증 정보가 없다면 복원 시도
+    if (!authStore.accessToken) {
+      await authStore.restoreAuth();
     }
-  } else if (to.name === 'login' && isLoggedIn) {
-      // 이미 로그인한 상태에서 로그인 페이지에 접근하는 경우
-      next('/profile');
-  } else {
-      // 그 외의 경우 (인증이 필요 없거나, 이미 로그인한 상태에서 다른 페이지로 이동)
-      next();
+
+    // 복원 후에도 인증되지 않았다면 로그인 페이지로 리다이렉션
+    if (!authStore.isAuthenticated) {
+      console.log(`[Auth Guard] ${to.name} 접근 실패: 로그인이 필요합니다.`);
+      next({name: 'Login'});
+      return;
+    }
   }
+
+  // 인증 불필요한 페이지 접근 시
+  // 로그인 했는데 로그인 페이지 접근 시
+  if (to.name === 'Login' && authStore.isAuthenticated) {
+    console.log(`[Auth Guard] 이미 로그인됨. ${to.name} 대신 Profile로 이동`);
+    next({ name: 'Profile' });
+    return;
+  }
+
+  // 그 외의 경우
+  next();
 });
 
 export default router;

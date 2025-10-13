@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { jwtDecode } from 'jwt-decode';
 import { AuthService } from '@/services/authService.js'
 
