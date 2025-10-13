@@ -8,36 +8,81 @@ import { BoardService } from '@/services/boardService.js';
 export const useBoardStore = defineStore('post', () => {
 
     // 상태 (State): ref()를 사용하여 반응성(Reactive) 상태 정의
-    const posts = ref([]);           // 게시글 목록 상태
+    const posts = ref([]);           // 게시글 목록 상태 (현재 페이지의 데이터)
     const isLoading = ref(false);      // API 요청 로딩 상태 플래그
 
+    // 현재 게시글 (상세 페이지에서 사용)
+    const currentPost = ref(null);
+
+    // ⭐ FIX 1: pagination 객체 선언 방식을 ref({})로 수정 ⭐
+    const pagination = ref({
+        page: 0,             // 현재 페이지 번호 (0부터 시작)
+        size: 10,            // 페이지 당 항목 수
+        totalElements: 0,    // 전체 게시글 수
+        totalPages: 0,       // 전체 페이지 수
+    });
+
     // Getter (컴퓨팅된 상태)
-    const postCount = computed(() => posts.value.length);
+    // const currentPagePostCount = computed(() => posts.value.length);
+    const postCount = computed(() => pagination.value.totalElements);
 
     // Actions
 
     /**
      * BoardService를 통해 서버에서 게시글 목록을 가져옵니다.
+     * @param {number} page - 요청할 페이지 번호 (기본 0)
+     * @param {number} size - 페이지당 항목 수 (기본 10)
      */
-    const fetchPosts = async () => {
+    const fetchPosts = async (page = 0, size = 10) => { // ⭐ FIX 2: 페이지네이션 파라미터 추가 ⭐
 
         if (isLoading.value) return;
 
         isLoading.value = true;
 
         try {
-            // Service 호출 (API 통신)
-            const data = await BoardService.fetchBoardList();
+            // Service 호출 시 페이지네이션 파라미터 전달
+            const responseData = await BoardService.fetchBoardList(page, size);
 
-            // 상태 업데이트
-            posts.value = data;
+            // ⭐ FIX 3: API 응답이 전체 Page 객체라고 가정하고 상태 업데이트 ⭐
+            posts.value = responseData.content;
+
+            // 페이지네이션 정보 업데이트
+            pagination.value = {
+                page: responseData.pageable.pageNumber,
+                size: responseData.pageable.pageSize,
+                totalElements: responseData.totalElements,
+                totalPages: responseData.totalPages,
+            };
+
             console.log("Board Store: 게시글 목록 로드 완료");
 
         } catch (error) {
             console.error("Board Store: 게시글 목록 로드 실패", error);
-            // View에서 에러 처리를 할 수 있도록 상태를 비웁니다.
             posts.value = [];
+            // 오류 발생 시 pagination 정보도 초기화하는 것이 좋습니다.
+            pagination.value = { page: 0, size: 10, totalElements: 0, totalPages: 0 };
             throw error;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    /**
+     * ⭐ FIX 4: 특정 ID의 게시글 상세 정보를 불러오는 액션 추가 ⭐
+     * @param {number} id - 게시글 ID
+     */
+    const fetchPostDetail = async (id) => {
+        if (!id || isLoading.value) return;
+
+        isLoading.value = true;
+        currentPost.value = null; // 이전 게시글 정보 초기화
+
+        try {
+            // Service 호출 (API 통신)
+            const data = await BoardService.fetchPostDetail(id); // BoardService에 해당 메서드가 있다고 가정
+            currentPost.value = data;
+        } catch (error) {
+            console.error(`게시글 ${id} 상세 정보 로드 실패:`, error);
         } finally {
             isLoading.value = false;
         }
@@ -46,7 +91,10 @@ export const useBoardStore = defineStore('post', () => {
     return {
         posts,
         isLoading,
-        postCount,
+        currentPost, // ⭐ FIX 5: currentPost 반환 ⭐
+        pagination, // ⭐ FIX 5: pagination 반환 ⭐
+        postCount, // ⭐ FIX 5: postCount 반환 ⭐
         fetchPosts,
+        fetchPostDetail, // ⭐ FIX 5: fetchPostDetail 반환 ⭐
     }
 });

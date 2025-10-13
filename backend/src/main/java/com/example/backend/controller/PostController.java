@@ -7,6 +7,10 @@ import com.example.backend.entity.Post;
 import com.example.backend.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,31 +27,39 @@ public class PostController {
 
     private final PostService postService;
 
+    // JWT/OAuth2 인증 구현 후, Principal 객체에서 Long 형태의 사용자 ID를 추출하는 헬퍼 메서드
+    private Long getUserIdFromPrincipal(Principal principal) {
+        if (principal == null) {
+            // 인증되지 않은 경우 임시 사용자 ID 반환 (실제 환경에서는 인증 예외를 던져야 함)
+            return 1L;
+        }
+        return Long.valueOf(principal.getName());
+    }
+
     // === 1. 게시글 생성 (POST /api/posts) ===
     @PostMapping
     public ResponseEntity<PostResponseDTO> createPost(@Valid @RequestBody PostCreateRequestDTO request,
                                            Principal principal) {
 
-        Long userId = Long.valueOf(principal.getName());
+        Long userId = getUserIdFromPrincipal(principal);
 
-        Post createdPost = postService.createPost(userId, request.getTitle(), request.getContent());
+        PostResponseDTO createdPostDTO = postService.createPost(userId, request.getTitle(), request.getContent());
 
         // DTO로 변환하여 201 Created 응답
-        return new ResponseEntity<>(new PostResponseDTO(createdPost), HttpStatus.CREATED);
+        return new ResponseEntity<>(createdPostDTO, HttpStatus.CREATED);
     }
 
     // === 2. 게시글 목록 조회 (GET /api/posts) ===
     @GetMapping
-    public ResponseEntity<List<PostResponseDTO>> getAllPosts() {
-        // 실제로는 Pageable 객체를 받아 페이징 처리를 해야 하지만, 간단히 전체 목록을 반환합니다.
-        List<Post> posts = postService.getAllPosts();
-
-        List<PostResponseDTO> response = posts.stream()
-                .map(PostResponseDTO::new)
-                .collect(Collectors.toList());
+    public ResponseEntity<Page<PostResponseDTO>> getPosts(
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        // ⭐️ 파라미터 추가: Pageable 객체를 받아 페이징 처리
+        // Service가 Page<PostResponseDTO>를 반환합니다.
+        Page<PostResponseDTO> postPage = postService.getPosts(pageable);
 
         // 200 OK 응답 (ResponseEntity.ok() 편의 메서드 사용)
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(postPage);
     }
 
     // === 3. 게시글 상세 조회 (GET /api/posts/{postId}) ===
@@ -55,22 +67,26 @@ public class PostController {
     public ResponseEntity<PostResponseDTO> getPostDetail(@PathVariable Long postId) {
 
         // 리소스를 찾지 못하면 Service에서 EntityNotFoundException이 발생하고, Handler가 404 처리
-        Post post = postService.getPostDetail(postId);
+        PostResponseDTO postDTO = postService.getPostDetail(postId);
 
-        return ResponseEntity.ok(new PostResponseDTO(post)); // 200 OK
+        return ResponseEntity.ok(postDTO); // 200 OK
     }
 
     // === 4. 게시글 수정 (PUT /api/posts/{postId}) ===
     @PutMapping("/{postId}")
-    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long postId, @Valid @RequestBody PostUpdateRequestDTO request, Principal principal) {
+    public ResponseEntity<PostResponseDTO> updatePost(
+            @PathVariable Long postId,
+            @Valid @RequestBody PostUpdateRequestDTO request,
+            Principal principal) {
 
-        Long userId = Long.valueOf(principal.getName());
+        Long userId = getUserIdFromPrincipal(principal);
 
         // 권한이 없거나 리소스가 없으면 Service에서 예외가 발생하고, Handler가 403/404 처리
-        Post updatedPost = postService.updatePost(postId, userId, request.getNewTitle(), request.getNewContent());
+        PostResponseDTO updatedPostDTO = postService.updatePost(
+                postId, userId, request.getNewTitle(), request.getNewContent());
 
         // 200 OK 응답
-        return ResponseEntity.ok(new PostResponseDTO(updatedPost));
+        return ResponseEntity.ok(updatedPostDTO);
     }
 
     // === 5. 게시글 소프트 삭제 (DELETE /api/posts/{postId}) ===
@@ -80,7 +96,7 @@ public class PostController {
     public ResponseEntity<Void> deleteSoftPost(@PathVariable Long postId, Principal principal) {
 
         // DELETE 요청의 Body 사용은 RESTful 표준에 완전히 맞지는 않지만, 테스트 편의를 위해 사용
-        Long userId = Long.valueOf(principal.getName());
+        Long userId = getUserIdFromPrincipal(principal);
 
         // 예외 처리는 모두 Handler로 위임
         postService.deleteSoftPost(postId, userId);

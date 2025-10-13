@@ -53,6 +53,11 @@ public class Post extends BaseTimeEntity {
         this.viewCount++;
     }
 
+    public void updatePost(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+
     /**
      * Post 객체 생성 시 필수 정보를 설정하는 생성자
      */
