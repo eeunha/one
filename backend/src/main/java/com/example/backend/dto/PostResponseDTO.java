@@ -16,6 +16,7 @@ public class PostResponseDTO {
     private String title;
     private String content;
     private int viewCount;
+    private Long authorId;
     private String authorName;
     private LocalDateTime createdAt;
     private List<CommentResponseDTO> comments;
@@ -25,6 +26,7 @@ public class PostResponseDTO {
         this.title = post.getTitle();
         this.content = post.getContent();
         this.viewCount = post.getViewCount();
+        this.authorId = post.getAuthor().getId();
         this.authorName = post.getAuthor().getName();
         this.createdAt = post.getCreatedAt();
 
