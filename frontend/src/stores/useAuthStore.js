@@ -1,7 +1,7 @@
-import {defineStore} from 'pinia';
-import {ref} from 'vue';
-import {jwtDecode} from "jwt-decode";
-import {AuthService} from "@/services/authService.js"
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
+import { jwtDecode } from 'jwt-decode';
+import { AuthService } from '@/services/authService.js'
 
 export const useAuthStore = defineStore('auth', () => {
     // 상태 (State)
@@ -10,6 +10,9 @@ export const useAuthStore = defineStore('auth', () => {
 
     // 토큰 갱신 중 상태 플래그
     const isRefreshing = ref(false);
+
+    // isAuthenticated는 Getter 역할로 추가 (라우터에서 사용하기 편하게)
+    const isAuthenticated = computed(() => !!accessToken.value && !!user.value); // 두 값이 있을 때 true
 
     // 액션 (Actions)
     const setLoginInfo = (token, userData) => {
@@ -133,6 +136,7 @@ export const useAuthStore = defineStore('auth', () => {
         accessToken,
         user,
         isRefreshing,
+        isAuthenticated,
         setLoginInfo,
         setAccessToken,
         clearLoginInfo,
