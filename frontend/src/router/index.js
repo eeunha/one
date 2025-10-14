@@ -10,6 +10,7 @@ import OAuth2RedirectHandler from "@/views/OAuth2RedirectHandler.vue";
 import BoardListView from "@/views/BoardListView.vue";
 import BoardDetailView from "@/views/BoardDetailView.vue";
 import BoardWriteView from "@/views/BoardWriteView.vue";
+import BoardUpdateView from '@/views/BoardUpdateView.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
@@ -35,6 +36,12 @@ const routes = [
     path: '/board/write',
     name: 'BoardWrite',
     component: BoardWriteView,
+    meta: {requiresAuth: true} // 인증 필수
+  },
+  {
+    path: '/board/:id/edit',
+    name: 'BoardUpdate',
+    component: BoardUpdateView,
     meta: {requiresAuth: true} // 인증 필수
   },
 ];

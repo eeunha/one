@@ -109,6 +109,30 @@ export const useBoardStore = defineStore('post', () => {
         }
     };
 
+    /**
+     * 기존 게시글을 수정합니다. (PUT /api/posts/{id})
+     * @param {number} id - 게시글 ID (URL 경로에 사용)
+     * @param {object} postData - { title, content } (Request Body에 사용)
+     */
+    const updatePost = async (id, postData) => {
+        isLoading.value = true;
+
+        try {
+            // BoardService의 createPost 메서드를 호출하여 POST 요청을 보냄
+            const responseData = await BoardService.updatePost(id, postData);
+            console.log('게시글 수정 성공: ', responseData);
+
+            // 백엔드가 반환한 DTO에서 ID를 추출하여 반환
+            return responseData.id;
+
+        } catch (error) {
+            console.error('게시글 수정 실패: ', error.response ? error.response.data : error.message);
+            throw error; // View 컴포넌트가 사용자에게 알리도록 에러를 던짐
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
     return {
         posts,
         isLoading,
@@ -118,5 +142,6 @@ export const useBoardStore = defineStore('post', () => {
         fetchPosts,
         fetchPostDetail,
         createPost,
+        updatePost,
     }
 });

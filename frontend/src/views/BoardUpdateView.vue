@@ -1,27 +1,63 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useBoardStore } from "@/stores/useBoardStore.js";
+import { useAuthStore } from "@/stores/useAuthStore.js";
 
+const route = useRoute();
 const router = useRouter();
 const boardStore = useBoardStore();
+const authStore = useAuthStore();
+const id = route.params.id; // URL 파라미터로 게시글 ID 획득
 
 // 폼 데이터 상태
 const postData = ref({
+  id: id,
   title: '',
-  content: '',
+  content: ''
 });
 
-// 에러 메시지 상태
 const errorMessage = ref('');
 
-// 폼 유효성 검사 (제목, 내용이 비어있지 않아야 함)
+// 폼 유효성 검사
 const isFormValid = computed(() => {
   return postData.value.title.trim() !== '' && postData.value.content.trim() !== '';
 });
 
 /**
- * 폼 제출 처리 함수
+ * 기존 게시글 데이터를 불러와 폼에 채우는 함수
+ */
+const loadPostData = async () => {
+  if (!id) return;
+
+  // 1. 상세 데이터 로드
+  await boardStore.fetchPostDetail(id);
+
+  // 2. 권한 확인 (작성자 본인인지 확인)
+  const post = boardStore.currentPost;
+  const currentUserId = authStore.user?.id;
+
+  // 게시글이 없거나, 작성자가 아니거나, 로그인 상태가 아니면 목록으로 리다이렉션
+  if (!post || post.authorId !== currentUserId) {
+    router.replace({ name: 'BoardList' }); // 브라우저 히스토리 스택에 현재 항목 덮어쓰기. 뒤로가기 불가
+    return;
+  }
+
+  // 3. 폼 데이터 초기화
+  postData.value = {
+    id: post.id,
+    title: post.title,
+    content: post.content
+  };
+};
+
+// 컴포넌트 마운트 시 데이터 로드
+onMounted(() => {
+  loadPostData();
+})
+
+/**
+ * 폼 제출 처리 함수 (수정 로직)
  */
 const handleSubmit = async () => {
   errorMessage.value = ''; // 에러 초기화
@@ -32,33 +68,44 @@ const handleSubmit = async () => {
   }
 
   try {
-    // Store 액션 호출 및 생성된 게시글 ID 받기
-    const postId = await boardStore.createPost(postData.value);
+    // Store의 updatePost 액션 호출
+    await boardStore.updatePost(postData.value.id, {
+      newTitle: postData.value.title,
+      newContent: postData.value.content
+    });
 
-    if (postId) {
-      // 작성 성공 시 상세 페이지로 이동
-      router.push({ name: 'BoardDetail', params: { id: postId } });
-    }
+    // 수정 성공 시 상세 페이지로 이동
+    router.push({ name: 'BoardDetail', params: { id: id } });
+
   } catch (error) {
     // API 호출 실패 시 에러 메시지 표시 (백엔드에서 받은 메시지 우선 사용)
-    const message = error.response?.data?.message || '게시글 작성 중 오류가 발생했습니다.';
+    const message = error.response?.data?.message || '게시글 수정 중 오류가 발생했습니다.';
     errorMessage.value = message;
-    console.error('Submission Error: ', error);
+    console.error('Update Submission Error: ', error);
   }
 };
 </script>
 
 <template>
   <div class="container mx-auto p-4 md:p-10 max-w-4xl">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800">새 게시글 작성</h1>
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">게시글 수정</h1>
 
-    <!-- 로딩 인디케이터 -->
-    <div v-if="boardStore.isLoading" class="text-center py-20">
+    <!-- 로딩/데이터 없음 인디케이터 -->
+    <div v-if="boardStore.isLoading && !postData.id" class="text-center py-20">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-      <p class="mt-4 text-lg text-blue-600">게시글을 등록하는 중입니다...</p>
+      <p class="mt-4 text-lg text-blue-600">데이터를 불러오는 중입니다...</p>
+    </div>
+    <div v-else-if="!boardStore.currentPost && !boardStore.isLoading" class="text-center py-20 bg-white rounded-xl shadow-lg">
+      <p class="text-2xl text-red-500 font-bold">수정할 게시글을 찾을 수 없거나 권한이 없습니다.</p>
+      <button
+          @click="router.push({ name: 'BoardList' })"
+          class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg transition duration-200 shadow"
+      >
+        목록으로 돌아가기
+      </button>
     </div>
 
-    <!-- 작성 폼 -->
+    <!-- 수정 폼 -->
     <form @submit.prevent="handleSubmit" v-else class="bg-white p-8 rounded-xl shadow-2xl space-y-6">
       <!-- 제목 입력 -->
       <div>
@@ -95,7 +142,7 @@ const handleSubmit = async () => {
       <div class="flex justify-end space-x-4">
         <button
             type="button"
-            @click="router.push({ name: 'BoardList' })"
+            @click="router.push({ name: 'BoardDetail', params: { id: id } })"
             class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-md"
         >
           취소
@@ -105,14 +152,9 @@ const handleSubmit = async () => {
             :disabled="!isFormValid || boardStore.isLoading"
             class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          등록하기
+          수정 완료
         </button>
       </div>
     </form>
-
-    <div class="mt-8 p-4 border rounded-lg bg-green-50 text-green-700">
-      <h2 class="font-bold text-xl">안내</h2>
-      <p class="mt-2">이 페이지는 <span class="font-mono bg-green-200 px-1 rounded">requiresAuth: true</span> 메타 태그로 보호되어 있습니다. (src/router/index.js)</p>
-    </div>
   </div>
 </template>

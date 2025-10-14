@@ -36,6 +36,7 @@ const isAuthor = computed(() => {
 // 수정 버튼 클릭 핸들러 (다음 단계에서 구현)
 const handleEdit = () => {
   console.log('수정 버튼 클릭: ', id);
+  router.push({ name: 'BoardUpdate', params: { id: id } });
 }
 
 // 삭제 버튼 클릭 핸들러 (다음 단계에서 구현)

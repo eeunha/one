@@ -58,5 +58,23 @@ export const BoardService = {
             console.error('Failed to create post: ', error);
             throw error;
         }
+    },
+
+    /**
+     * 기존 게시글을 수정합니다. (PUT /api/posts/{postId})
+     * @param {number} postId - 게시글 ID (URL 경로에 사용)
+     * @param {object} postData - { title, content } (Request Body에 사용)
+     * @returns {Promise<Object>} 수정된 PostResponseDTO
+     */
+    async updatePost(postId, postData) {
+        console.log('boardService - updatePost 진입')
+        try {
+            const response = await axios.put(`${BOARD_API_BASE_URL}/${postId}`, postData);
+            return response.data;
+        } catch (error) {
+            console.error('Failed to update post: ', error);
+            throw error;
+        }
     }
+
 }
