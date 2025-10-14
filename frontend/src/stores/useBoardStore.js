@@ -33,7 +33,7 @@ export const useBoardStore = defineStore('post', () => {
      * @param {number} page - 요청할 페이지 번호 (기본 0)
      * @param {number} size - 페이지당 항목 수 (기본 10)
      */
-    const fetchPosts = async (page = 0, size = 10) => { // ⭐ FIX 2: 페이지네이션 파라미터 추가 ⭐
+    const fetchPosts = async (page = 1, size = 10) => { // ⭐ FIX 2: 페이지네이션 파라미터 추가 ⭐
 
         if (isLoading.value) return;
 
