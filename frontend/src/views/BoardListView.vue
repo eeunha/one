@@ -1,20 +1,45 @@
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, watch } from "vue";
 import { useBoardStore } from "@/stores/useBoardStore.js";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
+import Pagination from "@/components/Pagination.vue";
 
 // Pinia Store 및 Router 사용
 const boardStore = useBoardStore();
 const router = useRouter();
+const route = useRoute();
+
+// URL에서 현재 페이지를 가져오거나 기본값 1을 사용합니다.
+const getCurrentPageFromRoute = () => {
+  // URL 쿼리 파라미터는 문자열이므로 숫자로 파싱 (기본값은 1)
+  const page = route.query.page ? parseInt(route.query.page) : 1;
+  // 페이지 번호는 최소 1이 되도록 보장
+  return page > 0 ? page : 1;
+};
+
+// 게시글을 로드하는 핵심 함수
+const loadPosts = (page) => {
+  // Store 액션에 1부터 시작하는 페이지 번호를 바로 전달합니다. (Store가 page-1 변환 담당)
+  boardStore.fetchPosts(page);
+};
 
 // 로드 시점: 컴포넌트 마운트 후 Store의 액션을 호출
 onMounted(() => {
-  // Store에 데이터가 없다면 로드 시작
-  // 데이터가 이미 캐싱되어 있다면 다시 호출하지 않아 불필요한 API 요청을 줄입니다.
-  if (boardStore.posts.length === 0) {
-    boardStore.fetchPosts();
-  }
+  // ⭐️ 마운트 시 URL 쿼리를 기준으로 데이터 로드 시작 ⭐️
+  loadPosts(getCurrentPageFromRoute());
 });
+
+// ⭐ FIX: 로드 시점 2: URL 쿼리 파라미터 'page'의 변경을 감지하고 데이터 재로드 ⭐
+watch(
+    () => route.query.page, // 감시 대상: URL 쿼리 파라미터의 'page' 값
+    (newPage, oldPage) => {
+      // page 쿼리가 변경되었을 때만 데이터 로드 (페이지를 떠날 때는 실행하지 않음)
+      if (newPage !== oldPage) {
+        loadPosts(getCurrentPageFromRoute());
+        window.scrollTo(0, 0);
+      }
+    }
+);
 
 /**
  * 글 작성 페이지로 이동
@@ -37,12 +62,16 @@ const goToDetail = (id) => {
   router.push({ name:'BoardDetail', params: { id: id } });
 };
 
-// 날짜 포맷팅 함수 (예시)
+// 날짜 포맷팅 함수
 const formatDate = (dateString) => {
   if (!dateString) return '날짜 없음';
   // 서버에서 받은 ISO 문자열을 보기 좋게 포맷합니다.
   const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
   return new Date(dateString).toLocaleDateString('ko-KR', options);
+}
+
+const changePage = (page) => {
+  router.push({ name: 'BoardList', query: { page } })
 }
 </script>
 
@@ -106,5 +135,10 @@ const formatDate = (dateString) => {
         <p class="text-md text-gray-400 mt-2">새 글을 작성해 보세요!</p>
       </div>
     </div>
+    <Pagination
+      :currentPage="boardStore.pagination.currentPage"
+      :totalPages="boardStore.pagination.totalPages"
+      @changePage="changePage"
+    />
   </div>
 </template>

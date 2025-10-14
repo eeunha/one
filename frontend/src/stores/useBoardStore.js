@@ -16,7 +16,7 @@ export const useBoardStore = defineStore('post', () => {
 
     // ⭐ FIX 1: pagination 객체 선언 방식을 ref({})로 수정 ⭐
     const pagination = ref({
-        page: 0,             // 현재 페이지 번호 (0부터 시작)
+        currentPage: 1,             // 현재 페이지 번호 (1부터 시작)
         size: 10,            // 페이지 당 항목 수
         totalElements: 0,    // 전체 게시글 수
         totalPages: 0,       // 전체 페이지 수
@@ -40,15 +40,18 @@ export const useBoardStore = defineStore('post', () => {
         isLoading.value = true;
 
         try {
+            // ⭐ FIX 2: 1-based 페이지 번호를 0-based로 변환하여 API에 전달 ⭐
+            const apiPage = page - 1;
+
             // Service 호출 시 페이지네이션 파라미터 전달
-            const responseData = await BoardService.fetchBoardList(page, size);
+            const responseData = await BoardService.fetchBoardList(apiPage, size);
 
             // ⭐ FIX 3: API 응답이 전체 Page 객체라고 가정하고 상태 업데이트 ⭐
             posts.value = responseData.content;
 
             // 페이지네이션 정보 업데이트
             pagination.value = {
-                page: responseData.pageable.pageNumber,
+                currentPage: responseData.pageable.pageNumber + 1,
                 size: responseData.pageable.pageSize,
                 totalElements: responseData.totalElements,
                 totalPages: responseData.totalPages,
@@ -60,7 +63,7 @@ export const useBoardStore = defineStore('post', () => {
             console.error("Board Store: 게시글 목록 로드 실패", error);
             posts.value = [];
             // 오류 발생 시 pagination 정보도 초기화하는 것이 좋습니다.
-            pagination.value = { page: 0, size: 10, totalElements: 0, totalPages: 0 };
+            pagination.value = { currentPage: 0, size: 10, totalElements: 0, totalPages: 0 };
             throw error;
         } finally {
             isLoading.value = false;
@@ -91,10 +94,10 @@ export const useBoardStore = defineStore('post', () => {
     return {
         posts,
         isLoading,
-        currentPost, // ⭐ FIX 5: currentPost 반환 ⭐
-        pagination, // ⭐ FIX 5: pagination 반환 ⭐
-        postCount, // ⭐ FIX 5: postCount 반환 ⭐
+        currentPost,
+        pagination,
+        postCount,
         fetchPosts,
-        fetchPostDetail, // ⭐ FIX 5: fetchPostDetail 반환 ⭐
+        fetchPostDetail,
     }
 });
