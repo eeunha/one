@@ -29,6 +29,34 @@ export const BoardService = {
             // 호출 실패 시 오류를 던져 View에서 처리하도록 합니다.
             throw error;
         }
+    },
+
+    /**
+     * 특정 ID의 게시글 상세 정보를 가져옵니다.
+     * @param {number} id - 게시글 ID
+     * @returns {Promise<Object>} PostResponseDTO 객체
+     */
+    async fetchPostDetail(id) {
+        try {
+            const response = await axios.get(`${BOARD_API_BASE_URL}/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Failed to fetch post ${id} detail: `, error);
+        }
+    },
+
+    /**
+     * ⭐ 새로운 게시글을 작성합니다. (POST /api/posts) ⭐
+     * @param {object} postData - { title, content }
+     * @returns {Promise<Object>} 작성된 PostResponseDTO (ID 포함)
+     */
+    async createPost(postData) {
+        try {
+            const response = await axios.post(BOARD_API_BASE_URL, postData);
+            return response.data;
+        } catch (error) {
+            console.error('Failed to create post: ', error);
+            throw error;
+        }
     }
-    // TODO: 4단계에서 fetchBoardDetail(id) 및 writeBoard(postData) 추가 예정
 }

@@ -16,14 +16,13 @@ export const useBoardStore = defineStore('post', () => {
 
     // ⭐ FIX 1: pagination 객체 선언 방식을 ref({})로 수정 ⭐
     const pagination = ref({
-        currentPage: 1,             // 현재 페이지 번호 (1부터 시작)
+        currentPage: 1,      // 현재 페이지 번호 (1부터 시작)
         size: 10,            // 페이지 당 항목 수
         totalElements: 0,    // 전체 게시글 수
         totalPages: 0,       // 전체 페이지 수
     });
 
     // Getter (컴퓨팅된 상태)
-    // const currentPagePostCount = computed(() => posts.value.length);
     const postCount = computed(() => pagination.value.totalElements);
 
     // Actions
@@ -91,6 +90,25 @@ export const useBoardStore = defineStore('post', () => {
         }
     };
 
+    const createPost = async (postData) => {
+        isLoading.value = true;
+
+        try {
+            // BoardService의 createPost 메서드를 호출하여 POST 요청을 보냄
+            const responseData = await BoardService.createPost(postData);
+            console.log('게시글 작성 성공: ', responseData);
+
+            // 백엔드가 반환한 DTO에서 ID를 추출하여 반환
+            return responseData.id;
+
+        } catch (error) {
+            console.error('게시글 작성 실패: ', error.response ? error.response.data : error.message);
+            throw error; // View 컴포넌트가 사용자에게 알리도록 에러를 던짐
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
     return {
         posts,
         isLoading,
@@ -99,5 +117,6 @@ export const useBoardStore = defineStore('post', () => {
         postCount,
         fetchPosts,
         fetchPostDetail,
+        createPost,
     }
 });
