@@ -99,6 +99,8 @@ export const useBoardStore = defineStore('post', () => {
     };
 
     const createPost = async (postData) => {
+        if (isLoading.value) return; // 중복 요청 방지
+
         isLoading.value = true;
 
         try {
@@ -123,6 +125,8 @@ export const useBoardStore = defineStore('post', () => {
      * @param {object} postData - { title, content } (Request Body에 사용)
      */
     const updatePost = async (id, postData) => {
+        if (isLoading.value) return; // 중복 요청 방지
+
         isLoading.value = true;
 
         try {
