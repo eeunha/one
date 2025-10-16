@@ -81,8 +81,16 @@ export const useBoardStore = defineStore('post', () => {
 
         try {
             // Service 호출 (API 통신)
-            const data = await BoardService.fetchPostDetail(id); // BoardService에 해당 메서드가 있다고 가정
+            const data = await BoardService.fetchPostDetail(id);
             currentPost.value = data;
+
+            // 2. 목록 상태에서도 해당 게시글을 찾아 viewCount를 갱신
+            const index = posts.value.findIndex(post => post.id === id);
+
+            if (index !== -1) {
+                // 목록 배열에서 해당 게시글의 viewCount만 업데이트
+                posts.value[index] = data;
+            }
         } catch (error) {
             console.error(`게시글 ${id} 상세 정보 로드 실패:`, error);
         } finally {

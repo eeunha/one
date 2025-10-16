@@ -8,13 +8,29 @@ const route = useRoute();
 const router = useRouter();
 const boardStore = useBoardStore();
 const authStore = useAuthStore();
-const id = route.params.id;
+
+// ⭐ [수정] props 정의를 제거하고, route.params에서 ID를 직접 가져와 Number로 변환합니다.
+// 이 방식이 router 설정 유무에 관계없이 가장 확실하게 ID를 가져옵니다.
+const postId = computed(() => Number(route.params.id));
 
 // 컴포넌트 마운트 시 상세 정보 로드
-onMounted(() => {
-  if (id) {
-    boardStore.fetchPostDetail(id);
+onMounted(async () => { // ⭐️ FIX 1: onMounted 훅을 async로 선언합니다.
+
+  if (postId.value && !isNaN(postId.value)) {
+    try {
+      // ⭐️ FIX 2: await을 사용하여 fetchPostDetail 액션이 완료될 때까지 기다립니다.
+      // 이 시점에 currentPost.value에는 조회수가 1 증가된 최신 데이터가 들어옵니다.
+      await boardStore.fetchPostDetail(postId.value);
+    } catch (error) {
+      // API 호출 실패 시 (e.g., 404), postNotFound 상태가 활성화됩니다.
+      console.error("게시글 상세 정보 로드 중 오류 발생: ", error);
+    }
+  } else {
+    // ID가 유효하지 않은 경우, 로딩 상태를 false로 설정하여 '찾을 수 없음' 표시
+    boardStore.isLoading = false;
+    console.error("게시글 ID가 유효하지 않습니다:", route.params.id);
   }
+
 })
 
 // ⭐ [추가] 현재 로그인된 사용자가 게시글 작성자인지 확인하는 Computed 속성 ⭐
@@ -33,15 +49,15 @@ const isAuthor = computed(() => {
   );
 });
 
-// 수정 버튼 클릭 핸들러 (다음 단계에서 구현)
+// 수정 버튼 클릭 핸들러
 const handleEdit = () => {
-  console.log('수정 버튼 클릭: ', id);
-  router.push({ name: 'BoardUpdate', params: { id: id } });
+  console.log('수정 버튼 클릭: ', postId.value);
+  router.push({ name: 'BoardUpdate', params: { id: postId.value } });
 }
 
 // 삭제 버튼 클릭 핸들러 (다음 단계에서 구현)
 const handleDelete = () => {
-  console.log('삭제 버튼 클릭: ', id);
+  console.log('삭제 버튼 클릭: ', postId.value);
 }
 
 const formatDate = (dateString) => {
@@ -49,6 +65,10 @@ const formatDate = (dateString) => {
   const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
   return new Date(dateString).toLocaleDateString('ko-KR', options);
 }
+
+// 게시글 로드 완료 후 데이터가 없는지 확인하는 Computed 속성
+const postNotFound = computed(() => !boardStore.isLoading && !boardStore.currentPost);
+
 </script>
 
 <template>
@@ -58,7 +78,18 @@ const formatDate = (dateString) => {
       <p class="mt-4 text-lg text-gray-600">게시글을 불러오는 중...</p>
     </div>
 
-    <div v-else-if="boardStore.currentPost" class="bg-white rounded-xl shadow-2xl p-6 md:p-10">
+    <!-- ⭐️ [수정] 게시글을 찾을 수 없는 경우를 postNotFound로 처리 ⭐️ -->
+    <div v-else-if="postNotFound" class="text-center py-20 bg-white rounded-xl shadow-lg">
+      <p class="text-2xl text-red-500 font-bold">게시글을 찾을 수 없거나 삭제되었습니다.</p>
+      <button
+          @click="router.push({ name: 'BoardList' })"
+          class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg transition duration-200 shadow"
+      >
+        목록으로 돌아가기
+      </button>
+    </div>
+
+    <div v-else class="bg-white rounded-xl shadow-2xl p-6 md:p-10">
       <!-- 헤더: 제목 및 정보 -->
       <header class="border-b pb-4 mb-6">
         <h1 class="text-4xl font-extrabold text-gray-900 mb-3 break-words">
@@ -107,17 +138,6 @@ const formatDate = (dateString) => {
           </button>
         </div>
       </footer>
-    </div>
-
-    <!-- 게시글이 없을 경우 -->
-    <div v-else class="text-center py-20 bg-white rounded-xl shadow-lg">
-      <p class="text-2xl text-red-500 font-bold">게시글을 찾을 수 없거나 삭제되었습니다.</p>
-      <button
-          @click="router.push({ name: 'BoardList' })"
-          class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg transition duration-200 shadow"
-      >
-        목록으로 돌아가기
-      </button>
     </div>
   </div>
 </template>
