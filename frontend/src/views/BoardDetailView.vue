@@ -1,13 +1,18 @@
 <script setup>
-import { onMounted, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useBoardStore } from "@/stores/useBoardStore.js";
 import { useAuthStore } from "@/stores/useAuthStore.js";
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue';
 
 const route = useRoute();
 const router = useRouter();
 const boardStore = useBoardStore();
 const authStore = useAuthStore();
+
+// ⭐️ [추가] 모달 상태 및 에러 메시지 관리 ⭐️
+const isDeleteModalOpen = ref(false);
+const deleteError = ref ('');
 
 // ⭐ [수정] props 정의를 제거하고, route.params에서 ID를 직접 가져와 Number로 변환합니다.
 // 이 방식이 router 설정 유무에 관계없이 가장 확실하게 ID를 가져옵니다.
@@ -58,6 +63,33 @@ const handleEdit = () => {
 // 삭제 버튼 클릭 핸들러 (다음 단계에서 구현)
 const handleDelete = () => {
   console.log('삭제 버튼 클릭: ', postId.value);
+
+  isDeleteModalOpen.value = true;
+  deleteError.value = ''; // 모달을 열 때 이전 에러 초기화
+}
+
+// ⭐️ [추가] 모달에서 '삭제 확인' 버튼 클릭 시 최종 로직 실행 ⭐️
+const confirmDelete = async () => {
+  if (!postId.value) return;
+
+  // Pinia Store의 isLoading 상태가 true가 되면, 모달의 확인 버튼이 자동으로 비활성화됩니다.
+  try {
+    await boardStore.deletePost(postId.value);
+
+    // 1. 삭제 성공: 모달 닫기
+    isDeleteModalOpen.value = false;
+
+    // 2. 목록 페이지로 이동
+    router.push({ name: 'BoardList' });
+
+    // (참고: 여기에 '삭제되었습니다' 토스트 메시지를 추가하면 완벽합니다.)
+    console.log('삭제되었습니다.');
+  } catch (error) {
+    // 3. 삭제 실패: 에러 메시지를 모달에 표시
+    const errorMessage = error.response?.data?.message || "게시글 삭제에 실패했습니다. 권한을 확인해 주세요.";
+    deleteError.value = errorMessage;
+    console.error("삭제 실패:", error);
+  }
 }
 
 const formatDate = (dateString) => {
@@ -140,4 +172,15 @@ const postNotFound = computed(() => !boardStore.isLoading && !boardStore.current
       </footer>
     </div>
   </div>
+
+  <!-- ⭐️ [추가] 커스텀 모달 컴포넌트 연결 ⭐️ -->
+  <DeleteConfirmationModal
+    :show="isDeleteModalOpen"
+    :title="'게시글 삭제 확인'"
+    :message="'정말로 이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다.'"
+    :is-loading="boardStore.isLoading"
+    :error="deleteError"
+    @update:show="isDeleteModalOpen = $event"
+    @confirm="confirmDelete"
+  />
 </template>

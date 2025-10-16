@@ -75,6 +75,16 @@ export const BoardService = {
             console.error('Failed to update post: ', error);
             throw error;
         }
-    }
+    },
 
+    async deletePost(postId) {
+        console.log('boardService - deletePost 진입')
+        try {
+            const response = await axios.delete(`${BOARD_API_BASE_URL}/${postId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Failed to delete post: ', error);
+            throw error;
+        }
+    }
 }

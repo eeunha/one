@@ -145,6 +145,27 @@ export const useBoardStore = defineStore('post', () => {
         }
     }
 
+    const deletePost = async (id) => {
+        if (isLoading.value) return; // 중복 요청 방지
+
+        isLoading.value = true;
+
+        try {
+            // BoardService의 createPost 메서드를 호출하여 POST 요청을 보냄
+            const responseData = await BoardService.deletePost(id);
+            console.log('게시글 삭제 성공: ', responseData);
+
+            // 백엔드가 반환한 DTO에서 ID를 추출하여 반환
+            return responseData.id;
+
+        } catch (error) {
+            console.error('게시글 삭제 실패: ', error.response ? error.response.data : error.message);
+            throw error; // View 컴포넌트가 사용자에게 알리도록 에러를 던짐
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
     return {
         posts,
         isLoading,
@@ -155,5 +176,6 @@ export const useBoardStore = defineStore('post', () => {
         fetchPostDetail,
         createPost,
         updatePost,
+        deletePost,
     }
 });

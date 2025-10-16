@@ -92,7 +92,6 @@ public class PostController {
     @PreAuthorize("hasRole('ADMIN') or @postService.isPostOwner(#postId, principal.name)")
     public ResponseEntity<Void> deleteSoftPost(@PathVariable Long postId, Principal principal) {
 
-        // DELETE 요청의 Body 사용은 RESTful 표준에 완전히 맞지는 않지만, 테스트 편의를 위해 사용
         Long userId = getUserIdFromPrincipal(principal);
 
         // 예외 처리는 모두 Handler로 위임
