@@ -20,7 +20,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // 페이지네이션을 위한 기본 findAll 메서드는 별도로 선언하지 않아도 됩니다.
 
     // 게시글 조회 시 updated_at 변경을 막기 위해, 조회수 업데이트는 별도의 Native Query로 처리
-    @Modifying // DML 쿼리임을 명시
+    @Modifying // DML 쿼리임을 명시 (데이터 변경)
     @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
     void incrementViewCount(@Param("postId") Long postId);
 
@@ -29,7 +29,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Optional<Post> findPostWithAuthorById(@Param("postId") Long postId);
     // 기존 findById() 대신 이 메서드를 사용하면 Post와 User가 즉시 로드되어 LazyException이 해결됩니다.
 
-    // ative Query로 DB에서 최신 ViewCount만 가져오기
+    // native Query로 DB에서 최신 ViewCount만 가져오기
     @Query(value = "SELECT p.view_count FROM posts p WHERE p.id = :postId", nativeQuery = true)
     Integer findViewCountByIdNative(@Param("postId") Long postId);
 }

@@ -91,7 +91,7 @@ public class PostService {
      * 이 메서드는 Native Query를 사용하여 updated_at 변경 없이 view_count만 업데이트합니다.
      * @param postId 증가시킬 게시글 ID
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW) // 새롭고 독립적인 트랜잭션을 시작하도록 강제. 성공적으로 끝나면 바로 커밋됨
     public Integer incrementViewCount(Long postId) {
 
         // 1. DB에 조회수 업데이트 (DML 쿼리)
