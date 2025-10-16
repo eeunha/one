@@ -46,13 +46,6 @@ public class Post extends BaseTimeEntity {
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
-    /**
-     * 조회수를 증가시키는 메서드
-     */
-    public void incrementViewCount() {
-        this.viewCount++;
-    }
-
     public void updatePost(String title, String content) {
         this.title = title;
         this.content = content;

@@ -33,7 +33,6 @@ public class PostService {
                 .title(title)
                 .content(content)
                 .author(author)
-                .viewCount(0)
                 .build();
 
         Post savedPost = postRepository.save(newPost);
