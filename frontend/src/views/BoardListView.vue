@@ -42,7 +42,7 @@ const handleTransientToast = () => {
     // 2. 메시지를 즉시 지우기 (매우 중요! 다음에 페이지 로드해도 다시 뜨지 않도록)
     boardStore.clearTransientToast();
   }
-}
+};
 
 // 로드 시점: 컴포넌트 마운트 후 Store의 액션을 호출
 onMounted(async () => {
@@ -93,18 +93,18 @@ const formatDate = (dateString) => {
   // 서버에서 받은 ISO 문자열을 보기 좋게 포맷합니다.
   const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
   return new Date(dateString).toLocaleDateString('ko-KR', options);
-}
+};
 
 const changePage = (page) => {
   router.push({ name: 'BoardList', query: { page } })
-}
+};
 
 // ⭐️ [추가] 토스트를 보여주는 함수 ⭐️
 const showToast = (message, type = 'success') => {
   toastMessage.value = message;
   toastType.value = type;
   isToastVisible.value = true;
-}
+};
 </script>
 
 <template>

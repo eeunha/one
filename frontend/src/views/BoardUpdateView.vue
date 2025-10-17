@@ -74,6 +74,8 @@ const handleSubmit = async () => {
       newContent: postData.value.content
     });
 
+    boardStore.setTransientToast('게시글이 성공적으로 수정되었습니다.', 'success');
+
     // 수정 성공 시 상세 페이지로 이동
     router.push({ name: 'BoardDetail', params: { id: id } });
 

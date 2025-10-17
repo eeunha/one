@@ -4,6 +4,7 @@ import { useRouter, useRoute } from "vue-router";
 import { useBoardStore } from "@/stores/useBoardStore.js";
 import { useAuthStore } from "@/stores/useAuthStore.js";
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue';
+import Toast from '@/components/Toast.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -18,6 +19,28 @@ const postId = computed(() => Number(route.params.id));
 const isDeleteModalOpen = ref(false);
 const deleteError = ref ('');
 
+// 로컬 토스트 상태
+// ⭐️ [추가] 목록 페이지에서 토스트를 띄우기 위한 상태 변수 ⭐️
+const isToastVisible = ref(false);
+const toastMessage = ref('');
+const toastType = ref('success');
+
+const handleTransientToast = () => {
+  if (boardStore.transientToast) {
+    const { message, type } = boardStore.transientToast;
+
+    showToast(message, type);
+
+    boardStore.clearTransientToast();
+  }
+};
+
+const showToast = (message, type = 'success') => {
+  toastMessage.value = message;
+  toastType.value = type;
+  isToastVisible.value = true;
+};
+
 // 컴포넌트 마운트 시 상세 정보 로드
 onMounted(async () => { // onMounted 훅을 async로 선언합니다.
 
@@ -26,6 +49,9 @@ onMounted(async () => { // onMounted 훅을 async로 선언합니다.
       // await을 사용하여 fetchPostDetail 액션이 완료될 때까지 기다립니다.
       // 이 시점에 currentPost.value에는 조회수가 1 증가된 최신 데이터가 들어옵니다.
       await boardStore.fetchPostDetail(postId.value);
+
+      handleTransientToast();
+
     } catch (error) {
       // API 호출 실패 시 (e.g., 404), postNotFound 상태가 활성화됩니다.
       console.error("게시글 상세 정보 로드 중 오류 발생: ", error);
@@ -35,8 +61,7 @@ onMounted(async () => { // onMounted 훅을 async로 선언합니다.
     boardStore.isLoading = false;
     console.error("게시글 ID가 유효하지 않습니다:", route.params.id);
   }
-
-})
+});
 
 // 현재 로그인된 사용자가 게시글 작성자인지 확인하는 Computed 속성
 const isAuthor = computed(() => {
@@ -58,7 +83,7 @@ const isAuthor = computed(() => {
 const handleEdit = () => {
   console.log('수정 버튼 클릭: ', postId.value);
   router.push({ name: 'BoardUpdate', params: { id: postId.value } });
-}
+};
 
 // 삭제 버튼 클릭 핸들러
 const handleDelete = () => {
@@ -66,7 +91,7 @@ const handleDelete = () => {
 
   isDeleteModalOpen.value = true;
   deleteError.value = ''; // 모달을 열 때 이전 에러 초기화
-}
+};
 
 // ⭐️ [수정] 모달에서 '삭제 확인' 버튼 클릭 시 최종 로직 실행 (토스트 활성화) ⭐️
 const confirmDelete = async () => {
@@ -95,13 +120,13 @@ const confirmDelete = async () => {
 
     console.error("삭제 실패:", error);
   }
-}
+};
 
 const formatDate = (dateString) => {
   if (!dateString) return '날짜 없음';
   const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
   return new Date(dateString).toLocaleDateString('ko-KR', options);
-}
+};
 
 // 게시글 로드 완료 후 데이터가 없는지 확인하는 Computed 속성
 const postNotFound = computed(() => !boardStore.isLoading && !boardStore.currentPost);
@@ -187,5 +212,12 @@ const postNotFound = computed(() => !boardStore.isLoading && !boardStore.current
     :error="deleteError"
     @update:show="isDeleteModalOpen = $event"
     @confirm="confirmDelete"
+  />
+
+  <Toast
+    :show="isToastVisible"
+    :message="toastMessage"
+    :type="toastType"
+    @update:show="isToastVisible = $event"
   />
 </template>
