@@ -9,9 +9,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccessTokenAndProfileResponseDTO {
+public class LoginResponseDTO {
     private String accessToken;
+//    private String refreshToken;
     private Long id;
-    private String name;
     private String email;
+    private String name;
+    private String role;
 }

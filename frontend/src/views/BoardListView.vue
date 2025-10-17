@@ -1,0 +1,184 @@
+<script setup>
+import { ref, onMounted, watch } from "vue";
+import { useBoardStore } from "@/stores/useBoardStore.js";
+import { useRouter, useRoute } from "vue-router";
+import Pagination from "@/components/Pagination.vue";
+import Toast from '@/components/Toast.vue';
+
+// Pinia Store 및 Router 사용
+const router = useRouter();
+const route = useRoute();
+const boardStore = useBoardStore();
+
+// 로컬 토스트 상태
+// ⭐️ [추가] 목록 페이지에서 토스트를 띄우기 위한 상태 변수 ⭐️
+const isToastVisible = ref(false);
+const toastMessage = ref('');
+const toastType = ref('success');
+
+// URL에서 현재 페이지를 가져오거나 기본값 1을 사용합니다.
+const getCurrentPageFromRoute = () => {
+  // URL 쿼리 파라미터는 문자열이므로 숫자로 파싱 (기본값은 1)
+  const page = route.query.page ? parseInt(route.query.page) : 1;
+  // 페이지 번호는 최소 1이 되도록 보장
+  return page > 0 ? page : 1;
+};
+
+// 게시글을 로드하는 핵심 함수
+const loadPosts = (page) => {
+  // Store 액션에 1부터 시작하는 페이지 번호를 바로 전달합니다. (Store가 page-1 변환 담당)
+  boardStore.fetchPosts(page);
+};
+
+// ⭐️ [핵심] Pinia Store에 임시 토스트가 있는지 확인하고 처리하는 함수 ⭐️
+const handleTransientToast = () => {
+  // Pinia Store에 메시지가 남아있다면
+  if (boardStore.transientToast) {
+    const { message, type } = boardStore.transientToast;
+
+    // 1. 토스트 띄우기
+    showToast(message, type);
+
+    // 2. 메시지를 즉시 지우기 (매우 중요! 다음에 페이지 로드해도 다시 뜨지 않도록)
+    boardStore.clearTransientToast();
+  }
+};
+
+// 로드 시점: 컴포넌트 마운트 후 Store의 액션을 호출
+onMounted(async () => {
+  // ⭐️ 마운트 시 URL 쿼리를 기준으로 데이터 로드 시작 ⭐️
+  // fetchPosts가 비동기 함수이므로 await을 추가하여 데이터 로드를 기다립니다.
+  await loadPosts(getCurrentPageFromRoute());
+
+  // ⭐️ [핵심] 마운트 후 혹시 도착한 토스트 메시지가 있는지 확인합니다. ⭐️
+  handleTransientToast();
+});
+
+// ⭐ FIX: 로드 시점 2: URL 쿼리 파라미터 'page'의 변경을 감지하고 데이터 재로드 ⭐
+watch(
+    () => route.query.page, // 감시 대상: URL 쿼리 파라미터의 'page' 값
+    (newPage, oldPage) => {
+      // page 쿼리가 변경되었을 때만 데이터 로드 (페이지를 떠날 때는 실행하지 않음)
+      if (newPage !== oldPage) {
+        loadPosts(getCurrentPageFromRoute());
+        window.scrollTo(0, 0);
+      }
+    }
+);
+
+/**
+ * 글 작성 페이지로 이동
+ */
+const goToWrite = () => {
+  router.push({ name: 'BoardWrite' });
+};
+
+/**
+ * 상세 페이지로 이동
+ * @param {number} id - 게시글 ID
+ */
+const goToDetail = (id) => {
+  // ⭐ FIX: ID가 유효한지 먼저 확인합니다. ⭐
+  if (!id) {
+    console.error("게시글 ID가 유효하지 않아 상세 페이지로 이동할 수 없습니다. Post ID:", id);
+    return;
+  }
+  // 라우터의 params를 사용하여 게시글 ID를 동적 라우트로 전달합니다.
+  router.push({ name:'BoardDetail', params: { id: id } });
+};
+
+// 날짜 포맷팅 함수
+const formatDate = (dateString) => {
+  if (!dateString) return '날짜 없음';
+  // 서버에서 받은 ISO 문자열을 보기 좋게 포맷합니다.
+  const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+  return new Date(dateString).toLocaleDateString('ko-KR', options);
+};
+
+const changePage = (page) => {
+  router.push({ name: 'BoardList', query: { page } })
+};
+
+// ⭐️ [추가] 토스트를 보여주는 함수 ⭐️
+const showToast = (message, type = 'success') => {
+  toastMessage.value = message;
+  toastType.value = type;
+  isToastVisible.value = true;
+};
+</script>
+
+<template>
+  <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+    <!-- 헤더 및 버튼 -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-extrabold text-gray-800">
+        게시판 목록 (총 {{ boardStore.postCount }}개)
+      </h1>
+      <button
+          @click="goToWrite"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow-md"
+      >
+        글 작성
+      </button>
+    </div>
+
+    <!-- 로딩 상태 -->
+    <div v-if="boardStore.isLoading" class="flex justify-center items-center h-48">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <p class="ml-4 text-lg text-gray-600">게시글을 불러오는 중...</p>
+    </div>
+
+    <!-- 게시글 목록 -->
+    <div v-else class="space-y-4">
+      <template v-if="boardStore.posts.length > 0">
+        <div
+            v-for="post in boardStore.posts"
+            :key="post.id"
+            @click="goToDetail(post.id)"
+            class="bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition duration-300 cursor-pointer border-l-4 border-blue-500 hover:border-blue-700"
+        >
+          <div class="flex justify-between items-center mb-1">
+            <!-- 제목 (글이 길면 ...으로 처리) -->
+            <h2 class="text-xl font-bold text-gray-800 truncate pr-4">
+              {{ post.title }}
+            </h2>
+            <!-- 작성일 -->
+            <span class="text-sm text-gray-500 font-medium flex-shrink-0">
+                            {{ formatDate(post.createdAt) }}
+                        </span>
+          </div>
+
+          <!-- 내용 미리보기 (두 줄까지만 표시) -->
+          <p class="text-gray-600 text-sm mb-2 line-clamp-2">
+            {{ post.content }}
+          </p>
+
+          <!-- 작성자 및 조회수 -->
+          <div class="flex justify-between text-xs text-gray-500 mt-2">
+            <span>게시글번호: {{ post.id || '게시글번호' }}</span>
+            <span>작성자: {{ post.authorName || '익명' }}</span>
+            <span>조회수: {{ post.viewCount || 0 }}</span>
+          </div>
+        </div>
+      </template>
+      <!-- 게시글이 없을 경우 -->
+      <div v-else class="text-center py-10 bg-white rounded-xl shadow-lg">
+        <p class="text-xl text-gray-500">아직 작성된 게시글이 없습니다.</p>
+        <p class="text-md text-gray-400 mt-2">새 글을 작성해 보세요!</p>
+      </div>
+    </div>
+    <Pagination
+      :currentPage="boardStore.pagination.currentPage"
+      :totalPages="boardStore.pagination.totalPages"
+      @changePage="changePage"
+    />
+  </div>
+
+  <!-- ⭐️ [필수] 토스트 컴포넌트 연결 ⭐️ -->
+  <Toast
+      :show="isToastVisible"
+      :message="toastMessage"
+      :type="toastType"
+      @update:show="isToastVisible = $event"
+  />
+</template>

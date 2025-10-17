@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.JwtAndProfileResponseDTO;
+import com.example.backend.dto.LoginResponseDTO;
+import com.example.backend.dto.LoginResultWrapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -37,7 +38,7 @@ public class OAuthService {
      * @param code Google에서 받은 인증 코드
      * @return JWT와 프로필 정보가 담긴 DTO
      */
-    public JwtAndProfileResponseDTO getJwtAndProfileResponse(String code) {
+    public LoginResultWrapper getJwtAndProfileResponse(String code) {
         
         System.out.println("OAuthService - getJwtAndProfileResponse 진입");
         
@@ -71,8 +72,9 @@ public class OAuthService {
 
         String email = (String) userInfo.get("email");
         String name = (String) userInfo.get("name");
+        String googleSnsId = (String) userInfo.get("id");
 
         // 3. UserService를 호출하여 두 개의 JWT 토큰을 Map 형태로 받아서 반환
-        return userService.processGoogleLogin(email, name);
+        return userService.processGoogleLogin(email, name, googleSnsId);
     }
 }

@@ -1,7 +1,9 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.AccessTokenAndProfileResponseDTO;
-import com.example.backend.dto.JwtAndProfileResponseDTO;
+import com.example.backend.dto.LoginResponseDTO;
+import com.example.backend.dto.LoginResultWrapper;
+import com.example.backend.dto.ProfileResponseDTO;
+import com.example.backend.entity.User;
 import com.example.backend.exception.RefreshTokenExpiredException;
 import com.example.backend.service.AuthService;
 import com.example.backend.service.OAuthService;
@@ -9,6 +11,7 @@ import com.example.backend.service.UserService;
 import com.example.backend.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +24,7 @@ import java.util.Map;
 // (인증 이후 상태 관리에 집중)
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor // ⭐️ final 필드를 주입받는 생성자를 자동으로 생성합니다.
 public class AuthController {
 
     @Value("${jwt.refresh-token-validity-in-seconds}")
@@ -31,13 +35,6 @@ public class AuthController {
     private final CookieUtil cookieUtil;
     private final AuthService authService;
 
-    public AuthController(OAuthService oAuthService, UserService userService, CookieUtil cookieUtil, AuthService authService) {
-        this.oAuthService = oAuthService;
-        this.userService = userService;
-        this.cookieUtil = cookieUtil;
-        this.authService = authService;
-    }
-
     /**
      * Google 로그인 후 프론트엔드에서 인증 코드를 보내는 API 엔드포인트
      * 이 컨트롤러는 리다이렉션 대신 JSON 응답을 반환합니다.
@@ -45,25 +42,23 @@ public class AuthController {
      * @return JWT와 사용자 프로필 정보가 담긴 DTO
      */
     @PostMapping("/google/login")
-    public ResponseEntity<JwtAndProfileResponseDTO> googleLogin(
+    public ResponseEntity<LoginResponseDTO> googleLogin(
             @RequestBody Map<String, String> requestBody, HttpServletResponse response
     ) {
         String code = requestBody.get("code");
         
         System.out.println("googleLogin 메소드 진입");
 
-        // 1. OAuthService를 호출하여 모든 JWT와 프로필 정보를 받습니다.
-        JwtAndProfileResponseDTO fullResponse = oAuthService.getJwtAndProfileResponse(code);
+        // 1. 서비스로부터 Wrapper 객체를 받습니다.
+        LoginResultWrapper resultWrapper = oAuthService.getJwtAndProfileResponse(code);
 
-        System.out.println("로그인 후 refresh: " + fullResponse.getRefreshToken());
+        System.out.println("로그인 후 refresh: " + resultWrapper.getRefreshToken());
 
-        // 2. 리프레시 토큰을 HttpOnly 쿠키에 담아 반환합니다.
-        // 이 쿠키는 자바스크립트로 접근할 수 없어 XSS 공격에 안전합니다.
-        cookieUtil.addJwtCookie(response, "refreshToken", fullResponse.getRefreshToken(), refreshTokenValidityInSeconds); // 1일 20초 (s)
+        // 2. Wrapper에서 RT를 꺼내 HttpOnly 쿠키에 담아 헤더로 보냅니다.
+        cookieUtil.addJwtCookie(response, "refreshToken", resultWrapper.getRefreshToken(), refreshTokenValidityInSeconds); // 1일 20초 (s)
 
-        // 3. 응답 바디에는 리프레시 토큰을 제외한 액세스 토큰과 프로필 정보만 담아 반환합니다.
-        fullResponse.setRefreshToken(null);
-        return ResponseEntity.ok(fullResponse);
+        // 3. Wrapper에서 응답 DTO를 꺼내 바디로 반환합니다.
+        return ResponseEntity.ok(resultWrapper.getLoginResponseDTO());
     }
 
     // 새로고침 시 사용자 정보를 복구하는 API
@@ -74,17 +69,22 @@ public class AuthController {
         
         try {
             // Spring Security의 Authentication 객체에서 사용자 ID 추출
-            // JwtUtil을 통해 토큰이 이미 검증된 상태이므로 별도의 유효성 검사는 불필요
             String userIdFromToken = authentication.getName(); // JWT 토큰의 subject(사용자 ID)를 가져옴
+            Long userId = Long.valueOf(userIdFromToken);
 
-            // 사용자 ID를 기반으로 DB에서 프로필 정보를 조회하고 새로운 토큰을 생성
-            AccessTokenAndProfileResponseDTO responseDto = userService.getProfileWithNewToken(userIdFromToken);
+            // 1. 사용자 ID를 기반으로 DB에서 프로필 정보를 조회합니다.
+            User user = userService.getUserByUserId(userId);
 
-            if (responseDto != null) {
-                return ResponseEntity.ok(responseDto); // 200 OK
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found"); // 404 Not Found
-            }
+            // 2. 응답 DTO를 구성합니다. (액세스 토큰은 응답에 포함하지 않음 - 기존 토큰 사용)
+            ProfileResponseDTO responseDto = new ProfileResponseDTO(
+                    user.getId(),
+                    user.getName(),
+                    user.getEmail(),
+                    user.getRole()
+            );
+
+            return ResponseEntity.ok(responseDto); // 200 OK
+
         } catch (Exception e) {
             // 토큰이 유효하지 않거나 만료된 경우 Spring Security가 401을 처리함.
             // 하지만 예외 처리의 견고함을 위해 명시적인 에러 메시지를 반환

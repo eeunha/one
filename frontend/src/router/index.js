@@ -1,17 +1,49 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/useAuthStore.js';
+
 import HomeView from '../views/HomeView.vue';
 import TestView from '../views/TestView.vue';
 import LoginView from "@/views/LoginView.vue";
 import ProfileView from "@/views/ProfileView.vue";
 import OAuth2RedirectHandler from "@/views/OAuth2RedirectHandler.vue";
-import { useAuthStore } from '@/stores/useAuthStore.js'; // ★ Pinia 스토어 import
+
+import BoardListView from "@/views/BoardListView.vue";
+import BoardDetailView from "@/views/BoardDetailView.vue";
+import BoardWriteView from "@/views/BoardWriteView.vue";
+import BoardUpdateView from '@/views/BoardUpdateView.vue';
 
 const routes = [
-  { path: '/', name: 'home', component: HomeView },
-  { path: '/test', name: 'test', component: TestView },
-  { path: '/login', name: 'login', component: LoginView },
-  { path: '/profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true } },
-  { path: '/oauth2/redirect', name: 'oauth2-redirect', component: OAuth2RedirectHandler },
+  { path: '/', name: 'Home', component: HomeView },
+  { path: '/test', name: 'Test', component: TestView },
+  { path: '/login', name: 'Login', component: LoginView },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: ProfileView,
+    meta: { requiresAuth: true } // 인증 필수
+  },
+  { path: '/oauth2/redirect', name: 'Oauth2Redirect', component: OAuth2RedirectHandler },
+
+    // 게시판
+  { path: '/board', name: 'BoardList', component: BoardListView },
+  {
+    path: '/board/:id',
+    name: 'BoardDetail',
+    component: BoardDetailView,
+    props: true
+  }, // URL 파라미터를 props로 전달
+  {
+    path: '/board/write',
+    name: 'BoardWrite',
+    component: BoardWriteView,
+    meta: {requiresAuth: true} // 인증 필수
+  },
+  {
+    path: '/board/:id/edit',
+    name: 'BoardUpdate',
+    component: BoardUpdateView,
+    meta: {requiresAuth: true} // 인증 필수
+  },
 ];
 
 const router = createRouter({
@@ -19,29 +51,43 @@ const router = createRouter({
   routes,
 });
 
-// 전역 네비게이션 가드
+/**
+ * 전역 네비게이션 가드:
+ * 1. 인증이 필요한 페이지 접근 시 JWT 상태 복원 및 로그인 체크를 수행합니다.
+ * 2. 로그인 상태에서 로그인 페이지 접근을 차단합니다.
+ */
 router.beforeEach(async (to, from, next) => {
 
   const authStore = useAuthStore();
 
-  const isLoggedIn = !!authStore.accessToken;
-  console.log("beforeEach - isLoggedIn:", isLoggedIn, "accessToken:", authStore.accessToken)
+  console.log("beforeEach");
 
-  // 인증이 필요한 페이지에 접근했고, 로그인 상태가 아닌 경우
-  if (to.meta.requiresAuth && !isLoggedIn) {
-    const confirmLogin = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?');
-    if (confirmLogin) {
-      next('/login');
-    } else {
-      next('/');
+  // 인증이 필요한 페이지에 접근 시
+  if (to.meta.requiresAuth) {
+
+    // Pinia 상태에 인증 정보가 없다면 복원 시도
+    if (!authStore.accessToken) {
+      await authStore.restoreAuth();
     }
-  } else if (to.name === 'login' && isLoggedIn) {
-      // 이미 로그인한 상태에서 로그인 페이지에 접근하는 경우
-      next('/profile');
-  } else {
-      // 그 외의 경우 (인증이 필요 없거나, 이미 로그인한 상태에서 다른 페이지로 이동)
-      next();
+
+    // 복원 후에도 인증되지 않았다면 로그인 페이지로 리다이렉션
+    if (!authStore.isAuthenticated) {
+      console.log(`[Auth Guard] ${to.name} 접근 실패: 로그인이 필요합니다.`);
+      next({name: 'Login'});
+      return;
+    }
   }
+
+  // 인증 불필요한 페이지 접근 시
+  // 로그인 했는데 로그인 페이지 접근 시
+  if (to.name === 'Login' && authStore.isAuthenticated) {
+    console.log(`[Auth Guard] 이미 로그인됨. ${to.name} 대신 Profile로 이동`);
+    next({ name: 'Profile' });
+    return;
+  }
+
+  // 그 외의 경우
+  next();
 });
 
 export default router;
