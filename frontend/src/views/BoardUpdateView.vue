@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useBoardStore } from "@/stores/useBoardStore.js";
 import { useAuthStore } from "@/stores/useAuthStore.js";
+import Toast from '@/components/Toast.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -18,6 +19,20 @@ const postData = ref({
 });
 
 const errorMessage = ref('');
+
+// ⭐️ [추가] 로컬 토스트 상태 (오류 알림용) ⭐️
+const isToastVisible = ref(false);
+const toastMessage = ref('');
+const toastType = ref('success');
+
+/**
+ * 로컬 상태를 업데이트하여 토스트 컴포넌트를 표시
+ */
+const showToast = (message, type) => {
+  toastMessage.value = message;
+  toastType.value = type;
+  isToastVisible.value = true;
+};
 
 // 폼 유효성 검사
 const isFormValid = computed(() => {
@@ -64,6 +79,9 @@ const handleSubmit = async () => {
 
   if (!isFormValid.value) {
     errorMessage.value = '제목과 내용을 모두 입력해주세요.';
+
+    // ⭐️ [추가] 폼 유효성 검사 실패 시 토스트도 함께 띄우기 (옵션) ⭐️
+    showToast(errorMessage, 'error');
     return;
   }
 
@@ -82,7 +100,11 @@ const handleSubmit = async () => {
   } catch (error) {
     // API 호출 실패 시 에러 메시지 표시 (백엔드에서 받은 메시지 우선 사용)
     const message = error.response?.data?.message || '게시글 수정 중 오류가 발생했습니다.';
+
+    // ⭐️ [수정] 실패: 폼 내부 에러 메시지를 설정하고, 토스트를 'error' 타입으로 즉시 표시 ⭐️
     errorMessage.value = message;
+    showToast(message, 'error');
+
     console.error('Update Submission Error: ', error);
   }
 };
@@ -159,4 +181,11 @@ const handleSubmit = async () => {
       </div>
     </form>
   </div>
+  <!-- ⭐️ [추가] Toast 컴포넌트 연결 (로컬 에러 표시용) ⭐️ -->
+  <Toast
+      :show="isToastVisible"
+      :message="toastMessage"
+      :type="toastType"
+      @update:show="isToastVisible = $event"
+  />
 </template>
