@@ -1,13 +1,20 @@
 <script setup>
-import { onMounted, watch } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useBoardStore } from "@/stores/useBoardStore.js";
 import { useRouter, useRoute } from "vue-router";
 import Pagination from "@/components/Pagination.vue";
+import Toast from '@/components/Toast.vue';
 
 // Pinia Store 및 Router 사용
-const boardStore = useBoardStore();
 const router = useRouter();
 const route = useRoute();
+const boardStore = useBoardStore();
+
+// 로컬 토스트 상태
+// ⭐️ [추가] 목록 페이지에서 토스트를 띄우기 위한 상태 변수 ⭐️
+const isToastVisible = ref(false);
+const toastMessage = ref('');
+const toastType = ref('success');
 
 // URL에서 현재 페이지를 가져오거나 기본값 1을 사용합니다.
 const getCurrentPageFromRoute = () => {
@@ -23,10 +30,28 @@ const loadPosts = (page) => {
   boardStore.fetchPosts(page);
 };
 
+// ⭐️ [핵심] Pinia Store에 임시 토스트가 있는지 확인하고 처리하는 함수 ⭐️
+const handleTransientToast = () => {
+  // Pinia Store에 메시지가 남아있다면
+  if (boardStore.transientToast) {
+    const { message, type } = boardStore.transientToast;
+
+    // 1. 토스트 띄우기
+    showToast(message, type);
+
+    // 2. 메시지를 즉시 지우기 (매우 중요! 다음에 페이지 로드해도 다시 뜨지 않도록)
+    boardStore.clearTransientToast();
+  }
+}
+
 // 로드 시점: 컴포넌트 마운트 후 Store의 액션을 호출
-onMounted(() => {
+onMounted(async () => {
   // ⭐️ 마운트 시 URL 쿼리를 기준으로 데이터 로드 시작 ⭐️
-  loadPosts(getCurrentPageFromRoute());
+  // fetchPosts가 비동기 함수이므로 await을 추가하여 데이터 로드를 기다립니다.
+  await loadPosts(getCurrentPageFromRoute());
+
+  // ⭐️ [핵심] 마운트 후 혹시 도착한 토스트 메시지가 있는지 확인합니다. ⭐️
+  handleTransientToast();
 });
 
 // ⭐ FIX: 로드 시점 2: URL 쿼리 파라미터 'page'의 변경을 감지하고 데이터 재로드 ⭐
@@ -72,6 +97,13 @@ const formatDate = (dateString) => {
 
 const changePage = (page) => {
   router.push({ name: 'BoardList', query: { page } })
+}
+
+// ⭐️ [추가] 토스트를 보여주는 함수 ⭐️
+const showToast = (message, type = 'success') => {
+  toastMessage.value = message;
+  toastType.value = type;
+  isToastVisible.value = true;
 }
 </script>
 
@@ -141,4 +173,12 @@ const changePage = (page) => {
       @changePage="changePage"
     />
   </div>
+
+  <!-- ⭐️ [필수] 토스트 컴포넌트 연결 ⭐️ -->
+  <Toast
+      :show="isToastVisible"
+      :message="toastMessage"
+      :type="toastType"
+      @update:show="isToastVisible = $event"
+  />
 </template>

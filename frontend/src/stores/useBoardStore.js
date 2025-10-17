@@ -22,6 +22,9 @@ export const useBoardStore = defineStore('post', () => {
         totalPages: 0,       // 전체 페이지 수
     });
 
+    // ⭐️ [수정] 라우트 이동 후 토스트 메시지를 전달하기 위한 임시 상태. 초기값은 null이어야 합니다. ⭐️
+    const transientToast = ref(null);
+
     // Getter (컴퓨팅된 상태)
     const postCount = computed(() => pagination.value.totalElements);
 
@@ -166,16 +169,35 @@ export const useBoardStore = defineStore('post', () => {
         }
     };
 
+    /**
+     * ⭐️ [추가] 다음 페이지로 이동할 때 토스트 메시지를 설정합니다. ⭐️
+     * @param {string} message - 표시할 메시지
+     * @param {string} type - 'success', 'error', 'info'
+     */
+    const setTransientToast = (message, type = 'success') => {
+        transientToast.value = { message, type };
+    };
+
+    /**
+     * ⭐️ [추가] 토스트 메시지를 표시한 후 상태를 초기화합니다. ⭐️
+     */
+    const clearTransientToast = () => {
+        transientToast.value = null;
+    };
+
     return {
         posts,
         isLoading,
         currentPost,
         pagination,
+        transientToast,
         postCount,
         fetchPosts,
         fetchPostDetail,
         createPost,
         updatePost,
         deletePost,
+        setTransientToast,
+        clearTransientToast,
     }
 });
