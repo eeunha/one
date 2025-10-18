@@ -1,12 +1,13 @@
 @import './base.css';
 @import "tailwindcss";
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
-}
+/*
+  유틸리티 클래스:
+  #app에 대한 레이아웃 (max-width, grid) 및 body의 flex 설정은
+  모두 Tailwind 클래스로 변환하여 App.vue 템플릿에 직접 적용해야 합니다.
+
+  여기는 순수하게 전역에서 정의되어야 하는 스타일(링크 스타일 등)만 남깁니다.
+*/
 
 a,
 .green {
@@ -22,15 +23,7 @@ a,
   }
 }
 
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
-}
+/*
+  이전에 있던 `#app` 및 `@media (min-width: 1024px)` 내의
+  `body`와 `#app` 스타일은 아래 가이드에 따라 템플릿으로 이동합니다.
+*/
