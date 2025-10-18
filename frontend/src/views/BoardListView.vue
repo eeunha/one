@@ -108,7 +108,7 @@ const showToast = (message, type = 'success') => {
 </script>
 
 <template>
-  <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+  <div class="p-4 md:p-8">
     <!-- 헤더 및 버튼 -->
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-extrabold text-gray-800">

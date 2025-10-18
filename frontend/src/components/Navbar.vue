@@ -3,7 +3,8 @@ import { RouterLink } from 'vue-router'
 </script>
 
 <template>
-  <nav class="flex space-x-4 border-b border-gray-200 mb-6 pb-2">
+<!--  <nav class="flex space-x-4 border-b border-gray-200 mb-6 pb-2">-->
+  <nav class="flex space-x-4 border-gray-200">
     <!-- Tailwind CSS를 사용하여 스타일을 인라인으로 변경했습니다. -->
     <RouterLink
         to="/"
