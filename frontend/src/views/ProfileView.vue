@@ -29,7 +29,7 @@ const logout = async () => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+  <div class="flex flex-col items-center justify-center min-h-screen p-4">
     <div class="bg-white p-8 rounded-xl shadow-lg text-center">
       <h2 class="text-2xl font-bold mb-4 text-gray-800">프로필</h2>
       <!-- user 객체가 null이 아닐 때만 내용을 표시 -->
