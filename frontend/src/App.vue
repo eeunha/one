@@ -28,7 +28,7 @@ import Navbar from '@/components/Navbar.vue'
     </header>
 
     <!-- MAIN CONTENT: 중앙 정렬 담당 -->
-    <main class="max-w-6xl mx-auto w-full mt-8 p-4 sm:p-8 bg-white rounded-xl shadow-2xl">
+    <main class="max-w-6xl mx-auto w-full mt-8 mb-8 p-4 sm:p-8 bg-white rounded-xl shadow-2xl">
       <RouterView />
     </main>
   </div>
@@ -65,8 +65,3 @@ header, #app {
   white-space: nowrap;
 }
 </style>
-
-<!--
-  scoped 스타일 블록은 내용이 없으므로 삭제합니다.
-  (제거해도 무방하며, 코드를 더 간결하게 만듭니다.)
--->

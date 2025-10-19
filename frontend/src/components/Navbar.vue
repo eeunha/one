@@ -18,7 +18,7 @@ import { RouterLink } from 'vue-router'
         class="text-gray-600 hover:text-indigo-600 transition duration-150 p-2 rounded-md"
         active-class="font-bold text-indigo-600 bg-indigo-50"
     >
-      게시글 목록
+      게시판
     </RouterLink>
     <RouterLink
         to="/login"
