@@ -105,6 +105,20 @@ const showToast = (message, type = 'success') => {
   toastType.value = type;
   isToastVisible.value = true;
 };
+
+// ⭐️ [추가] 순차 번호를 계산하는 Computed Property나 함수 (템플릿에서 바로 사용) ⭐️
+// 이 함수는 템플릿의 v-for 내부에서 index를 인수로 받습니다.
+const getSequentialNumber = (index) => {
+  const currentPage = boardStore.pagination.currentPage;
+  const postsPerPage = boardStore.pagination.size;
+
+  // (현재 페이지 번호 - 1) * 페이지당 글 수 = 오프셋 (이전 페이지까지의 글 수)
+  const offset = (currentPage - 1) * postsPerPage;
+
+  // 최종 순차 번호 = 오프셋 + 현재 페이지 배열 내 인덱스(0부터 시작) + 1
+  return offset + index + 1;
+};
+
 </script>
 
 <template>
@@ -132,32 +146,43 @@ const showToast = (message, type = 'success') => {
     <div v-else class="space-y-4">
       <template v-if="boardStore.posts.length > 0">
         <div
-            v-for="post in boardStore.posts"
+            v-for="(post, index) in boardStore.posts"
             :key="post.id"
             @click="goToDetail(post.id)"
-            class="bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition duration-300 cursor-pointer border-l-4 border-blue-500 hover:border-blue-700"
+            class="bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition duration-300 cursor-pointer border-l-4 border-blue-500 hover:border-blue-700 flex items-center"
         >
-          <div class="flex justify-between items-center mb-1">
-            <!-- 제목 (글이 길면 ...으로 처리) -->
-            <h2 class="text-xl font-bold text-gray-800 truncate pr-4">
-              {{ post.title }}
-            </h2>
-            <!-- 작성일 -->
-            <span class="text-sm text-gray-500 font-medium flex-shrink-0">
-                            {{ formatDate(post.createdAt) }}
-                        </span>
+
+          <!-- 1. Left Column: Number (글번호) -->
+          <div class="w-16 flex-shrink-0 text-center text-gray-500">
+            <span class="text-lg font-bold text-blue-600">
+              {{ getSequentialNumber(index) }}
+            </span>
           </div>
 
-          <!-- 내용 미리보기 (두 줄까지만 표시) -->
-          <p class="text-gray-600 text-sm mb-2 line-clamp-2">
-            {{ post.content }}
-          </p>
+          <!-- 2. Center Column: Title and Content (제목 및 내용) -->
+          <!-- flex-grow로 남은 공간 대부분 차지, min-w-0으로 오버플로우 방지 -->
+          <div class="flex-grow min-w-0 mx-4">
+            <!-- Title -->
+            <h2 class="text-xl font-bold text-gray-800 truncate mb-1">
+              {{ post.title }}
+            </h2>
+            <!-- Content Preview -->
+            <p class="text-gray-600 text-sm line-clamp-2">
+              {{ post.content }}
+            </p>
+          </div>
 
-          <!-- 작성자 및 조회수 -->
-          <div class="flex justify-between text-xs text-gray-500 mt-2">
-            <span>게시글번호: {{ post.id || '게시글번호' }}</span>
-            <span>작성자: {{ post.authorName || '익명' }}</span>
-            <span>조회수: {{ post.viewCount || 0 }}</span>
+          <!-- 3. Right Column: Date, Author, Views (날짜, 작성자, 조회수) -->
+          <!-- ⭐️ [수정] sm 사이즈(640px) 미만에서는 hidden으로 숨기고, sm 사이즈부터 다시 flex로 보이도록 설정 ⭐️ -->
+          <div class="hidden sm:flex w-40 flex-shrink-0 flex-col items-end text-right text-gray-500 space-y-1">
+            <!-- 1. 작성일 (날짜) -->
+            <span class="font-medium text-sm text-gray-600">
+              {{ formatDate(post.createdAt) }}
+            </span>
+            <!-- 2. 작성자 -->
+            <span class="text-xs">작성자: {{ post.authorName || '익명' }}</span>
+            <!-- 3. 조회수 -->
+            <span class="text-xs">조회수: {{ post.viewCount || 0 }}</span>
           </div>
         </div>
       </template>
