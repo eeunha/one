@@ -14,7 +14,7 @@ const { user } = storeToRefs(authStore);
 const isLoggedIn = computed(() => !!user.value);
 
 // 3. Tailwind CSS 클래스 정의 (반복되는 스타일을 상수로 관리)
-const baseClasses = 'transition duration-150 p-2 rounded-md flex items-center';
+const baseClasses = 'transition duration-150 p-2 rounded-md flex items-center whitespace-nowrap';
 const inactiveClasses = 'text-gray-600 hover:text-indigo-600';
 const activeClasses = 'font-bold text-indigo-600 bg-indigo-50';
 
@@ -110,10 +110,12 @@ const logout = async () => {
     </RouterLink>
 
     <!-- 로그인 시에만 사용자명, 로그아웃 버튼 표시 -->
+    <!-- ⭐️ [수정] ml-6 대신 justify-end를 사용하여 오른쪽 정렬을 유지하고, flex-shrink-0을 추가하여 이 영역이 좁아지지 않게 함 ⭐️ -->
     <div
         v-if="isLoggedIn"
-        class="ml-6 text-gray-600 font-medium text-sm flex items-center space-x-3">
-      <p>
+        class="ml-auto text-gray-600 font-medium text-sm flex items-center space-x-3 flex-shrink-0">
+      <!-- ⭐️ [수정] 사용자 이름 텍스트도 강제 줄바꿈 방지 ⭐️ -->
+      <p class="whitespace-nowrap">
         {{user.name}} 님
       </p>
 
