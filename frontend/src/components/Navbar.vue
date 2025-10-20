@@ -81,14 +81,20 @@ const logout = async () => {
       Login
     </RouterLink>
 
-    <!-- ⭐️ 로그인 시에만 로그아웃 버튼 표시 (스타일 보정) ⭐️ -->
-    <button
+    <!-- 로그인 시에만 사용자명, 로그아웃 버튼 표시 -->
+    <div
         v-else
-        @click="logout"
-        class="text-gray-600 hover:text-red-600 transition duration-150 p-2 rounded-md font-medium hover:bg-red-50 leading-tight"
-    >
-      Logout
-    </button>
+        class="ml-6 text-gray-600 font-medium text-sm flex items-center space-x-3">
+      <p>
+        {{user.name}} 님
+      </p>
 
+      <button
+          @click="logout"
+          class="border border-gray-300 leading-tight transition duration-150 p-2 rounded-md hover:bg-red-50 hover:text-red-600 hover:border-red-300"
+      >
+        Logout
+      </button>
+    </div>
   </nav>
 </template>
