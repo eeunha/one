@@ -110,9 +110,9 @@ const handleSubmit = async () => {
       </div>
     </form>
 
-    <div class="mt-8 p-4 border rounded-lg bg-green-50 text-green-700">
-      <h2 class="font-bold text-xl">안내</h2>
-      <p class="mt-2">이 페이지는 <span class="font-mono bg-green-200 px-1 rounded">requiresAuth: true</span> 메타 태그로 보호되어 있습니다. (src/router/index.js)</p>
-    </div>
+<!--    <div class="mt-8 p-4 border rounded-lg bg-green-50 text-green-700">-->
+<!--      <h2 class="font-bold text-xl">안내</h2>-->
+<!--      <p class="mt-2">이 페이지는 <span class="font-mono bg-green-200 px-1 rounded">requiresAuth: true</span> 메타 태그로 보호되어 있습니다. (src/router/index.js)</p>-->
+<!--    </div>-->
   </div>
 </template>
