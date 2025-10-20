@@ -157,11 +157,12 @@ const postNotFound = computed(() => !boardStore.isLoading && !boardStore.current
         <h1 class="text-4xl font-extrabold text-gray-900 mb-3 break-words">
           {{ boardStore.currentPost.title }}
         </h1>
-        <div class="flex items-center text-sm text-gray-500">
-          <span class="mr-4">
+        <!-- ⭐️ 변경: flex-col을 사용하여 모바일에서 세로로 쌓고, md:flex-row로 가로 배치합니다. ⭐️ -->
+        <div class="flex flex-col md:flex-row md:items-center text-sm text-gray-500 space-y-1 md:space-y-0">
+          <span class="md:mr-4">
             작성자: <strong class="text-gray-700">{{ boardStore.currentPost.authorName || '익명' }}</strong>
           </span>
-          <span class="mr-4">
+          <span class="md:mr-4">
             작성일: {{ formatDate(boardStore.currentPost.createdAt) }}
           </span>
           <span>
