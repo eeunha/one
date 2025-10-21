@@ -51,6 +51,8 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/posts/{postId}").permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/posts/{postId}/comments").permitAll()
+
                         // 2. Role 기반 접근 제어: 관리자 권한만 허용
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 

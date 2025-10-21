@@ -50,7 +50,7 @@ public class CommentController {
 
     // === 3. 댓글 수정 (PUT /api/posts/{postId}/comments/{commentId}) ===
     @PutMapping("/{commentId}")
-    public ResponseEntity<CommentResponseDTO> updateComment (@PathVariable Long commentId, @Valid @RequestBody CommentRequestDTO request, Principal principal) {
+    public ResponseEntity<CommentResponseDTO> updateComment (@PathVariable Long postId, @PathVariable Long commentId, @Valid @RequestBody CommentRequestDTO request, Principal principal) {
 
         Long userId = Long.valueOf(principal.getName());
 
@@ -63,7 +63,7 @@ public class CommentController {
     // === 4. 댓글 소프트 삭제 (DELETE /api/posts/{postId}/comments/{commentId}) ===
     @DeleteMapping("/{commentId}")
     @PreAuthorize("hasRole('ADMIN') or @commentService.isCommentOwner(#commentId, principal.name)")
-    public ResponseEntity<Void> deleteSoftComment (@PathVariable Long commentId, Principal principal) {
+    public ResponseEntity<Void> deleteSoftComment (@PathVariable Long postId, @PathVariable Long commentId, Principal principal) {
 
         Long userId = Long.valueOf(principal.getName());
 
