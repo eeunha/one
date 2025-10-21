@@ -87,7 +87,7 @@ const openDeleteModal = () => {
 
 <template>
   <!-- 각 댓글 항목 -->
-  <div class="border-b border-gray-200 pb-4 pt-4 last:border-b-0">
+  <div class="border-b border-gray-200 pb-4 last:border-b-0">
     <div class="flex justify-between items-start mb-2">
       <div class="text-sm flex flex-col md:flex-row md:items-center">
         <!-- 작성자명과 날짜 -->

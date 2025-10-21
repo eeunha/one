@@ -36,10 +36,7 @@ const handleCommentSubmitted = (message, type) => {
 
 <template>
   <div>
-    <!-- ⭐️ 1. 댓글 작성 폼 배치 (목록 위에 위치) ⭐️ -->
-    <CommentForm @comment-submitted="handleCommentSubmitted" />
-
-    <!-- 2. 댓글 개수를 표시하는 제목 -->
+    <!-- 댓글 개수를 표시하는 제목 -->
     <h2 class="text-2xl font-bold mb-6 mt-8 text-gray-800 border-b pb-3">
       댓글 ({{ commentStore.commentCount }})
     </h2>
@@ -70,5 +67,8 @@ const handleCommentSubmitted = (message, type) => {
           @comment-submitted="handleCommentSubmitted"
       />
     </div>
+
+    <!-- ⭐️ 댓글 작성 폼 배치 (목록 위에 위치) ⭐️ -->
+    <CommentForm @comment-submitted="handleCommentSubmitted" />
   </div>
 </template>

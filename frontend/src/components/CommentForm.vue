@@ -55,7 +55,7 @@ const emit = defineEmits('comment-submitted');
 
 <template>
   <div class="mb-8">
-    <h3 class="text-lg font-semibold mb-3 text-gray-700">댓글 작성</h3>
+    <h3 class="text-lg font-semibold mb-3 mt-6 text-gray-700">댓글 작성</h3>
 
     <!-- 비로그인 상태 안내 -->
     <div v-if="!isAuthenticated" class="p-4 bg-gray-100 border border-gray-300 rounded-lg text-center text-gray-600">
