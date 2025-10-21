@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -42,40 +43,48 @@ public class UserService implements UserDetailsService {
     public LoginResultWrapper processGoogleLogin(String email, String name, String snsId) {
 
         System.out.println("UserService - processGoogleLogin 진입");
-        
-        // 1. 이메일로 기존 사용자가 있는지 조회합니다. 없으면 새로 생성합니다.
-        User user = userRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    User newUser = User.builder()
-                            .email(email)
-                            .name(name)
-                            .snsProvider("google")
-                            .snsId(snsId)
-                            .role("ROLE_USER")
-                            .build();
-                    return userRepository.save(newUser);
-                });
 
-        // 2. JWT 토큰을 생성합니다.
-        // JWT의 주체(subject)는 보안을 위해 사용자 ID를 사용합니다.
+        // 1. 이메일로 사용자 객체를 한 번만 조회합니다.
+        Optional<User> existingUser = userRepository.findByEmail(email);
+
+        // 2. 기존 사용자 존재 여부를 플래그로 저장합니다.
+        boolean isNewUser = existingUser.isEmpty(); // DB 조회는 이미 끝남
+
+        // 3. 사용자 객체를 가져오거나 새로 생성합니다.
+        User user = existingUser.orElseGet(() -> {
+            User newUser = User.builder()
+                    .email(email)
+                    .name(name)
+                    .snsProvider("google")
+                    .snsId(snsId)
+                    .role("ROLE_USER")
+                    .build();
+            // 최초 생성 시 여기서 DB에 저장됨 (updated_at은 null 상태)
+            return userRepository.save(newUser);
+        });
+
+        // 4. JWT 토큰을 생성하고 DB에 저장합니다.
         String accessToken = jwtUtil.generateAccessToken(user);
         String refreshToken = jwtUtil.generateRefreshToken(user);
 
-        // 3. 리프레시 토큰을 DB에 저장합니다.
-        // 이는 토큰 재발급 시 사용자의 유효성을 확인하는 데 필요합니다.
-        // ⭐️ 개선: setter 대신 엔티티 비즈니스 메서드 사용
         user.updateRefreshToken(
                 refreshToken,
                 LocalDateTime.now().plusSeconds(refreshTokenValidityInSeconds)
         );
+
+        // 5. 조건부 updated_at 갱신 로직 (isNewUser 플래그 사용)
+        if (!isNewUser) {
+            // 기존 사용자(재로그인)인 경우에만 updated_at을 갱신합니다.
+            user.updateModifiedAt();
+            System.out.println("재 로그인 시 updated_at 갱신 완료");
+        }
+
+        // 6. DB에 변경 사항 저장 (RT와 조건부 updated_at)
         userRepository.save(user);
 
         LoginResponseDTO loginResponseDTO = new LoginResponseDTO(accessToken, user.getId(), user.getEmail(), user.getName(), user.getRole());
 
-        // 4. 토큰과 프로필 정보를 DTO에 담아서 반환합니다.
-        // 이 DTO는 AuthController에서 사용됩니다.
-
-        // 쿠키를 통해 컨트롤러에서 브라우저에 전달
+        // 7. 결과 반환
         return new LoginResultWrapper(loginResponseDTO, refreshToken);
     }
 
