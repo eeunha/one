@@ -28,14 +28,16 @@ public abstract class BaseTimeEntity {
         this.createdAt = LocalDateTime.now();
     }
 
-    // 엔티티가 업데이트되기 전(수정 전)에 실행
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
     // 소프트 삭제를 위한 메서드
     public void markAsDeleted() {
         this.deletedAt = LocalDateTime.now();
+    }
+
+    /**
+     * updated_at 필드를 현재 시각으로 갱신하는 메서드
+     * (비즈니스 로직에 의해 수동으로 호출됨)
+     */
+    public void updateModifiedAt() {
+        this.updatedAt = LocalDateTime.now();
     }
 }
