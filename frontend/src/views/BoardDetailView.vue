@@ -1,9 +1,9 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { useBoardStore } from "@/stores/useBoardStore.js";
-import { useAuthStore } from "@/stores/useAuthStore.js";
-import { useCommentStore } from '@/stores/useCommentStore.js';
+import {ref, onMounted, computed} from "vue";
+import {useRouter, useRoute} from "vue-router";
+import {useBoardStore} from "@/stores/useBoardStore.js";
+import {useAuthStore} from "@/stores/useAuthStore.js";
+import {useCommentStore} from '@/stores/useCommentStore.js';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue';
 import Toast from '@/components/Toast.vue';
 import CommentList from '@/components/CommentList.vue';
@@ -20,7 +20,7 @@ const postId = computed(() => Number(route.params.id));
 
 // 게시글 삭제 모달 상태
 const isPostDeleteModalOpen = ref(false);
-const postDeleteError = ref ('');
+const postDeleteError = ref('');
 
 // 2. ⭐️ 댓글 삭제 모달 상태 ⭐️
 const isCommentDeleteModalOpen = ref(false);
@@ -60,7 +60,7 @@ onMounted(async () => { // onMounted 훅을 async로 선언합니다.
 
 const handleTransientToast = () => {
   if (boardStore.transientToast) {
-    const { message, type } = boardStore.transientToast;
+    const {message, type} = boardStore.transientToast;
 
     showToast(message, type);
 
@@ -97,7 +97,7 @@ const isAuthor = computed(() => {
 // 게시글 수정 버튼 클릭 핸들러
 const handleEditPost = () => {
   console.log('수정 버튼 클릭: ', postId.value);
-  router.push({ name: 'BoardUpdate', params: { id: postId.value } });
+  router.push({name: 'BoardUpdate', params: {id: postId.value}});
 };
 
 // 게시글 삭제 버튼 클릭 핸들러
@@ -124,7 +124,7 @@ const confirmDeletePost = async () => {
     boardStore.setTransientToast('게시글이 성공적으로 삭제되었습니다.', 'success');
 
     // 3. 목록으로 이동
-    router.push({ name: 'BoardList' });
+    router.push({name: 'BoardList'});
 
     console.log('게시글 삭제 성공 및 목록 이동');
 
@@ -152,7 +152,7 @@ const confirmDeleteComment = async () => {
   try {
     await commentStore.deleteComment(commentToDeleteId.value);
 
-    isCommentDeleteModalOpen.value= false;
+    isCommentDeleteModalOpen.value = false;
     commentToDeleteId.value = null;
 
     showToast('댓글이 성공적으로 삭제되었습니다.', 'success');
@@ -168,7 +168,7 @@ const confirmDeleteComment = async () => {
 // --- 기타 유틸리티 ---
 const formatDate = (dateString) => {
   if (!dateString) return '날짜 없음';
-  const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+  const options = {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'};
   return new Date(dateString).toLocaleDateString('ko-KR', options);
 };
 
@@ -178,111 +178,113 @@ const postNotFound = computed(() => !boardStore.isLoading && !boardStore.current
 </script>
 
 <template>
-  <div class="container mx-auto p-4 md:p-10 max-w-4xl">
-    <div v-if="boardStore.isLoading" class="text-center py-20">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-      <p class="mt-4 text-lg text-gray-600">게시글을 불러오는 중...</p>
-    </div>
+  <div class="board-detail-view">
+    <div class="container mx-auto p-4 md:p-10 max-w-4xl">
+      <div v-if="boardStore.isLoading" class="text-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+        <p class="mt-4 text-lg text-gray-600">게시글을 불러오는 중...</p>
+      </div>
 
-    <!-- 게시글을 찾을 수 없는 경우를 postNotFound로 처리 -->
-    <div v-else-if="postNotFound" class="text-center py-20 bg-white rounded-xl shadow-lg">
-      <p class="text-2xl text-red-500 font-bold">게시글을 찾을 수 없거나 삭제되었습니다.</p>
-      <button
-          @click="router.push({ name: 'BoardList' })"
-          class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg transition duration-200 shadow"
-      >
-        목록으로 돌아가기
-      </button>
-    </div>
+      <!-- 게시글을 찾을 수 없는 경우를 postNotFound로 처리 -->
+      <div v-else-if="postNotFound" class="text-center py-20 bg-white rounded-xl shadow-lg">
+        <p class="text-2xl text-red-500 font-bold">게시글을 찾을 수 없거나 삭제되었습니다.</p>
+        <button
+            @click="router.push({ name: 'BoardList' })"
+            class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg transition duration-200 shadow"
+        >
+          목록으로 돌아가기
+        </button>
+      </div>
 
-    <div v-else class="bg-white rounded-xl shadow-2xl p-6 md:p-10">
-      <!-- 헤더: 제목 및 정보 -->
-      <header class="border-b pb-4 mb-6">
-        <h1 class="text-4xl font-extrabold text-gray-900 mb-3 break-words">
-          {{ boardStore.currentPost.title }}
-        </h1>
-        <!-- ⭐️ 변경: flex-col을 사용하여 모바일에서 세로로 쌓고, md:flex-row로 가로 배치합니다. ⭐️ -->
-        <div class="flex flex-col md:flex-row md:items-center text-sm text-gray-500 space-y-1 md:space-y-0">
+      <div v-else class="bg-white rounded-xl shadow-2xl p-6 md:p-10">
+        <!-- 헤더: 제목 및 정보 -->
+        <header class="border-b pb-4 mb-6">
+          <h1 class="text-4xl font-extrabold text-gray-900 mb-4 break-words">
+            {{ boardStore.currentPost.title }}
+          </h1>
+          <!-- ⭐️ 변경: flex-col을 사용하여 모바일에서 세로로 쌓고, md:flex-row로 가로 배치합니다. ⭐️ -->
+          <div class="flex flex-col md:flex-row md:items-center text-sm text-gray-500 space-y-1 md:space-y-0">
           <span class="md:mr-4">
             작성자: <strong class="text-gray-700">{{ boardStore.currentPost.authorName || '익명' }}</strong>
           </span>
-          <span class="md:mr-4">
+            <span class="md:mr-4">
             작성일: {{ formatDate(boardStore.currentPost.createdAt) }}
           </span>
-          <span>
+            <span>
             조회수: {{ boardStore.currentPost.viewCount || 0 }}
           </span>
-        </div>
-      </header>
+          </div>
+        </header>
 
-      <!-- 본문 내용 -->
-      <section class="min-h-[200px] text-lg text-gray-700 leading-relaxed whitespace-pre-wrap mb-10">
-        {{ boardStore.currentPost.content }}
-      </section>
+        <!-- 본문 내용 -->
+        <section class="min-h-[200px] text-lg text-gray-700 leading-relaxed whitespace-pre-wrap mb-10">
+          {{ boardStore.currentPost.content }}
+        </section>
 
-      <!-- 액션 버튼 영역 -->
-      <footer class="flex justify-between border-t pt-4">
-        <button
-            @click="router.push({ name: 'BoardList' })"
-            class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
-        >
-          목록으로
-        </button>
-
-        <!-- 수정/삭제 버튼: isAuthor가 true일 때만 표시 -->
-        <div v-if="isAuthor" class="space-x-2">
+        <!-- 액션 버튼 영역 -->
+        <footer class="flex justify-between border-t pt-4">
           <button
-              @click="handleEditPost"
-              class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
+              @click="router.push({ name: 'BoardList' })"
+              class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
           >
-            수정
+            목록으로
           </button>
-          <button
-              @click="handleDeletePost"
-              class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
-          >
-            삭제
-          </button>
-        </div>
-      </footer>
+
+          <!-- 수정/삭제 버튼: isAuthor가 true일 때만 표시 -->
+          <div v-if="isAuthor" class="space-x-2">
+            <button
+                @click="handleEditPost"
+                class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
+            >
+              수정
+            </button>
+            <button
+                @click="handleDeletePost"
+                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
+            >
+              삭제
+            </button>
+          </div>
+        </footer>
+      </div>
+
+      <!-- ⭐️ 2. 댓글 섹션 통합 (CommentList 컴포넌트 추가) ⭐️ -->
+      <div class="mt-10">
+        <CommentList
+            :post-id="postId"
+            @open-delete-modal="handleOpenCommentDeleteModal"
+            @comment-submitted="handleCommentToast"
+        />
+      </div>
     </div>
 
-    <!-- ⭐️ 2. 댓글 섹션 통합 (CommentList 컴포넌트 추가) ⭐️ -->
-    <div class="mt-10">
-      <CommentList
-        :post-id="postId"
-        @open-delete-modal="handleOpenCommentDeleteModal"
-        @comment-submitted="handleCommentToast"
-      />
-    </div>
+    <!-- 커스텀 모달 컴포넌트 연결 -->
+    <DeleteConfirmationModal
+        :show="isPostDeleteModalOpen"
+        :title="'게시글 삭제 확인'"
+        :message="'정말로 이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다.'"
+        :is-loading="boardStore.isLoading"
+        :error="postDeleteError"
+        @update:show="isPostDeleteModalOpen = $event"
+        @confirm="confirmDeletePost"
+    />
+
+    <!-- 2. ⭐️ 댓글 삭제 커스텀 모달 컴포넌트 ⭐️ -->
+    <DeleteConfirmationModal
+        :show="isCommentDeleteModalOpen"
+        :title="'댓글 삭제 확인'"
+        :message="'정말로 이 댓글을 삭제하시겠습니까? 삭제된 댓글은 복구할 수 없습니다.'"
+        :is-loading="commentStore.isLoading"
+        :error="commentDeleteError"
+        @update:show="isCommentDeleteModalOpen = $event"
+        @confirm="confirmDeleteComment"
+    />
+
+    <Toast
+        :show="isToastVisible"
+        :message="toastMessage"
+        :type="toastType"
+        @update:show="isToastVisible = $event"
+    />
   </div>
-
-  <!-- 커스텀 모달 컴포넌트 연결 -->
-  <DeleteConfirmationModal
-    :show="isPostDeleteModalOpen"
-    :title="'게시글 삭제 확인'"
-    :message="'정말로 이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다.'"
-    :is-loading="boardStore.isLoading"
-    :error="postDeleteError"
-    @update:show="isPostDeleteModalOpen = $event"
-    @confirm="confirmDeletePost"
-  />
-
-  <!-- 2. ⭐️ 댓글 삭제 커스텀 모달 컴포넌트 ⭐️ -->
-  <DeleteConfirmationModal
-    :show="isCommentDeleteModalOpen"
-    :title="'댓글 삭제 확인'"
-    :message="'정말로 이 댓글을 삭제하시겠습니까? 삭제된 댓글은 복구할 수 없습니다.'"
-    :is-loading="commentStore.isLoading"
-    :error="commentDeleteError"
-    @update:show="isCommentDeleteModalOpen = $event"
-    @confirm="confirmDeleteComment"
-  />
-
-  <Toast
-    :show="isToastVisible"
-    :message="toastMessage"
-    :type="toastType"
-    @update:show="isToastVisible = $event"
-  />
 </template>
