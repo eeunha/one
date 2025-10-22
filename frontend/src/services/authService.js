@@ -1,4 +1,4 @@
-import axios from "@/utils/axios.js";
+import { publicClient, authenticatedClient } from "@/utils/axios.js";
 
 /**
  * 순수한 API 통신(Service) 로직을 캡슐화한 객체
@@ -11,7 +11,7 @@ export const AuthService = {
      */
     async refreshTokens() {
         // RT는 HTTP-only 쿠키에 담겨 요청 시 자동으로 전송됨
-        const response = await axios.post('/auth/refresh');
+        const response = await authenticatedClient.post('/auth/refresh');
 
         // 새로운 AT만 반환하여 Store가 상태 관리에 집중하도록 합니다.
         return response.data.accessToken;
@@ -22,7 +22,7 @@ export const AuthService = {
      * @returns {Promise<Object>} 사용자 프로필 데이터
      */
     async fetchUserProfile() {
-        const response = await axios.get('/auth/profile');
+        const response = await authenticatedClient.get('/auth/profile');
 
         // 프로필 데이터 객체만 반환합니다.
         return response.data;

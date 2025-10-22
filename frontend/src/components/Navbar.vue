@@ -2,7 +2,7 @@
 import { RouterLink, useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/useAuthStore.js';
 import { storeToRefs } from 'pinia';
-import axios from '@/utils/axios';
+import { authenticatedClient } from '@/utils/axios';
 import { computed } from 'vue';
 
 const router = useRouter();
@@ -42,7 +42,7 @@ const logout = async () => {
 
   try {
     // 1. 백엔드 로그아웃 API 호출
-    await axios.post('/auth/logout');
+    await authenticatedClient.post('/auth/logout');
 
     // 2. Pinia 스토어에서 정보 제거
     authStore.clearLoginInfo();

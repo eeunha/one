@@ -1,4 +1,4 @@
-import axios from '@/utils/axios.js';
+import { publicClient, authenticatedClient } from '@/utils/axios.js';
 
 const COMMENT_API_BASE_URL = '/posts';
 
@@ -13,7 +13,7 @@ export const CommentService = {
         console.log('commentService - fetchCommentList 진입');
         try {
             // GET /posts/{postId}/comments
-            const response = await axios.get(`${COMMENT_API_BASE_URL}/${postId}/comments`);
+            const response = await publicClient.get(`${COMMENT_API_BASE_URL}/${postId}/comments`);
             // 컨트롤러가 List<DTO>를 직접 반환하므로, response.data는 배열입니다.
             return response.data;
         } catch (error) {
@@ -32,7 +32,7 @@ export const CommentService = {
         console.log('commentService - createComment 진입');
         try {
             // POST /posts/{postId}/comments
-            const response = await axios.post(`${COMMENT_API_BASE_URL}/${postId}/comments`, commentData);
+            const response = await authenticatedClient.post(`${COMMENT_API_BASE_URL}/${postId}/comments`, commentData);
             return response.data;
         } catch (error) {
             console.error('Failed to create comment:', error);
@@ -51,7 +51,7 @@ export const CommentService = {
         console.log('commentService - updateComment 진입');
         try {
             // PUT /posts/{postId}/comments/{commentId}
-            const response = await axios.put(`${COMMENT_API_BASE_URL}/${postId}/comments/${commentId}`, commentData);
+            const response = await authenticatedClient.put(`${COMMENT_API_BASE_URL}/${postId}/comments/${commentId}`, commentData);
             return response.data;
         } catch (error) {
             console.error('Failed to update comment:', error);
@@ -69,7 +69,7 @@ export const CommentService = {
         console.log('commentService - deleteComment 진입');
         try {
             // DELETE /posts/{postId}/comments/{commentId}
-            const response = await axios.delete(`${COMMENT_API_BASE_URL}/${postId}/comments/${commentId}`);
+            const response = await authenticatedClient.delete(`${COMMENT_API_BASE_URL}/${postId}/comments/${commentId}`);
         } catch (error) {
             console.error('Failed to delete comment:', error);
             throw error;
