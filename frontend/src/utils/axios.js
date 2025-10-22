@@ -2,23 +2,39 @@ import axios from 'axios';
 import { useAuthStore } from '@/stores/useAuthStore.js';
 import router from '@/router'; // 라우터 import
 
-// 기본 axios 인스턴스 설정
-const instance = axios.create({
-    baseURL: 'http://localhost:8085/api',
-    withCredentials: true, // 쿠키 전송 허용
-    headers: {
-        'Content-Type': 'application/json',
-    },
+// -------------------------------------------------------------
+// 기본 설정
+// -------------------------------------------------------------
+const BASE_URL = 'http://localhost:8085/api';
+
+// =============================================================
+// 1. PUBLIC CLIENT: 토큰을 첨부하지 않는 공개 API용 (permitAll 경로)
+// =============================================================
+// 이 클라이언트는 어떠한 인터셉터도 설정하지 않습니다.
+export const publicClient = axios.create({
+    baseURL: BASE_URL,
+    withCredentials: true,
+    headers: { 'Content-Type': 'application/json' },
 });
 
-// 요청 인터셉터
-// 모든 API 요청을 보내기 전에 Pinia 스토어에서 액세스 토큰을 가져와 Authorization 헤더에 자동으로 추가
-instance.interceptors.request.use(
+// =============================================================
+// 2. AUTHENTICATED CLIENT: 인증이 필수인 API용 (토큰 첨부 및 갱신 로직 포함)
+// =============================================================
+export const authenticatedClient = axios.create({
+    baseURL: BASE_URL,
+    withCredentials: true,
+    headers: { 'Content-Type': 'application/json' },
+});
+
+// -------------------------------------------------------------
+// 요청 인터셉터 (Access Token 자동 첨부 및 사전 갱신)
+// -------------------------------------------------------------
+authenticatedClient.interceptors.request.use(
     async (config) => {
         const authStore = useAuthStore();
         const accessToken = authStore.accessToken;
 
-        console.log('axios.js - 요청 인터셉터 진입');
+        console.log('authenticatedClient - 요청 인터셉터 진입');
 
         // ⭐ 1. 갱신 중인 경우: 갱신이 완료될 때까지 대기 ⭐
         if (authStore.isRefreshing) {
@@ -61,8 +77,10 @@ instance.interceptors.request.use(
     }
 );
 
-// 응답 인터셉터: 401 발생 시 refresh token으로 재발급 시도
-instance.interceptors.response.use(
+// -------------------------------------------------------------
+// 응답 인터셉터 (401 발생 시 토큰 갱신 및 재시도)
+// -------------------------------------------------------------
+authenticatedClient.interceptors.response.use(
     // 1. 정상 응답이면 그대로 반환
     (response) => response,
 
@@ -133,5 +151,3 @@ instance.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-
-export default instance;
