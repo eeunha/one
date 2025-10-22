@@ -2,7 +2,7 @@
 import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/useAuthStore.js';
-import axios from '@/utils/axios';
+import { publicClient } from '@/utils/axios';
 
 const route = useRoute();
 const router = useRouter();
@@ -15,7 +15,7 @@ onMounted(async () => {
   if (code) {
     try {
       // 1. 백엔드 API 호출 (code를 쿼리 파라미터로 전달)
-      const response = await axios.post(`/auth/google/login`, { code: code });
+      const response = await publicClient.post(`/auth/google/login`, { code: code });
 
       // 2. 응답 데이터에서 토큰과 프로필 정보 추출
       const { accessToken, id, name, email } = response.data; // 순서 상관 X

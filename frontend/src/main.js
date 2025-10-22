@@ -6,10 +6,6 @@ import router from './router'
 import { createPinia } from 'pinia'
 import { useAuthStore } from "@/stores/useAuthStore.js";
 
-import axios from 'axios'
-
-axios.defaults.withCredentials = true; // 모든 요청에서 쿠키 자동 포함
-
 const pinia = createPinia()
 const app = createApp(App)
 
