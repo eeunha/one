@@ -138,9 +138,12 @@ public class PostService {
             throw new IllegalArgumentException("게시글을 삭제할 권한이 없습니다.");
         }
 
-        // 2. 소프트 삭제 처리 (DB에서 실제 데이터 삭제는 안 함)
-        // JpaRepository.delete()는 @SQLDelete를 호출하여 소프트 삭제 수행
-        postRepository.delete(post);
+        // 2. ⭐️ @SQLDelete 대신, 자바 객체의 상태 변경 메서드를 직접 호출합니다.
+        post.markAsDeleted();
+
+        // 3. JPA의 변경 감지(Dirty Checking)가 post의 deleted_at 및 updated_at 변경을 감지하고,
+        //    트랜잭션 종료 시 UPDATE 쿼리를 실행하여 DB에 반영합니다.
+        // postRepository.save(post); // 👈 Dirty Checking에 맡기므로 생략 가능 (명시적 호출도 무방)
     }
 
     // === ⭐️ Spring Security SpEL에서 호출할 게시글 소유자 확인 메서드 ===

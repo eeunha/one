@@ -68,4 +68,15 @@ public class User extends BaseTimeEntity {
         this.refreshToken = token;
         this.refreshTokenExpiry = expiry;
     }
+
+    // 사용자 생성 메서드
+    public static User createSocialUser(String email, String name, String snsProvider, String snsId, String role) {
+        User user = new User(); // @NoArgsConstructor 사용
+        user.email = email;
+        user.name = name;
+        user.snsProvider = snsProvider;
+        user.snsId = snsId;
+        user.role = role;
+        return user;
+    }
 }
