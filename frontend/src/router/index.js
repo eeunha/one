@@ -49,6 +49,16 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+  // 💡 여기에 scrollBehavior를 추가했습니다.
+  // 모든 라우트 이동 시 스크롤 위치를 (0, 0) 즉, 맨 위로 설정합니다.
+  scrollBehavior(to, from, savedPosition) {
+    // If there is a saved position (e.g., browser back/forward), use it.
+    if (savedPosition) {
+      return savedPosition;
+    }
+    // Otherwise, scroll to the top of the page.
+    return { top: 0, left: 0, behavior: 'smooth' };
+  }
 });
 
 /**
