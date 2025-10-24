@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
-     * 로그인/인증을 위해 이메일을 기준으로 User를 조회합니다.
+     * 이메일을 기준으로 User를 조회합니다.
      * DDL에서 email은 UNIQUE로 설정되어 있으므로 Optional<User>를 반환합니다.
      * @param email 조회할 사용자 이메일
      * @return User 객체 (Optional)

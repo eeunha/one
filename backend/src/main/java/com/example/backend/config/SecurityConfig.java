@@ -61,7 +61,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/profile",
                                 "/auth/logout",
-                                "/posts/**"
+                                "/posts/**",
+                                "/users/**"
                         ).authenticated()
 
                         // 4. 나머지 모든 요청 (최종 fallback)

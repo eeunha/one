@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +26,38 @@ public class UserService implements UserDetailsService {
     @Value("${jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenValidityInSeconds;
 
+    // ⭐️ 더미 유저의 고유 이메일 상수를 정의합니다.
+    public static final String WITHDRAWN_USER_EMAIL = "system-withdrawn@dummy.com";
+
+    private final AuthService authService;
+    private final PostService postService;
+    private final CommentService commentService;
+
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+
+    // ⭐️ 초기화 메서드 추가
+    @Transactional
+    public void initializeDummyUser() {
+
+        // 고유 이메일로 더미 유저 존재 여부 확인
+        if (userRepository.findByEmail(WITHDRAWN_USER_EMAIL).isEmpty()) {
+
+            User dummyUser = User.builder()
+                    .email(WITHDRAWN_USER_EMAIL)
+                    .name("탈퇴한 회원")
+                    .snsProvider("system")
+                    .snsId("-1")
+                    .role("ROLE_WITHDRAWN")
+                    .build();
+
+            // 2. save()를 통해 DB가 안전하게 INSERT 및 ID 자동 할당
+            User savedUser = userRepository.save(dummyUser);
+
+            // 3. (선택 사항) 초기화 시 할당된 ID를 확인하여 로그 출력
+            System.out.println("✅ 시스템 더미 탈퇴 회원 생성 완료. 할당된 ID: " + savedUser.getId());
+        }
+    }
 
     /**
      * 구글 로그인 처리를 담당합니다.
@@ -113,4 +142,38 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
     }
 
+    @Transactional
+    public void withdrawUser(Long currentUserId, String refreshToken) {
+
+        // 1. 사용자 엔티티 조회
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + currentUserId));
+
+        // 2. Refresh Token 무효화 (보안을 위해 가장 먼저 처리)
+        authService.logout(refreshToken);
+
+        // AT 블랙리스트 처리 -> 나는 그대로 두기로.
+
+        // 3. Soft Delete 처리 (사용자 접근 권한 영구 박탈)
+        user.markAsDeleted();
+
+        // 더미 유저 엔티티를 조회하여 ID 가져오기
+        Long dummyUserId = getWithdrawnUser().getId();
+
+        // 4. 연관 데이터 (게시글/댓글) 익명화
+        postService.anonymizePosts(currentUserId, dummyUserId);
+        commentService.anonymizeComments(currentUserId, dummyUserId);
+
+        // 5. (Dirty Checking에 의해 user 엔티티 자동 저장)
+    }
+
+    /**
+     * 시스템 더미 탈퇴 회원 엔티티를 조회합니다.
+     * @return 더미 회원 User 엔티티
+     * @throws RuntimeException 더미 회원이 존재하지 않을 경우
+     */
+    public User getWithdrawnUser() {
+        return userRepository.findByEmail(WITHDRAWN_USER_EMAIL)
+                .orElseThrow(() -> new RuntimeException("시스템 더미 탈퇴 회원(ID)를 찾을 수 없습니다."));
+    }
 }

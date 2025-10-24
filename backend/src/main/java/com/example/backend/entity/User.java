@@ -16,8 +16,8 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE) // ⭐️ Builder 사용을 위해 추가 (private)
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // ⭐️ 수정: protected 접근 권한 명시
+@AllArgsConstructor(access = AccessLevel.PRIVATE) // ⭐️ id를 포함한 모든 필드를 인수로 받는 생성자
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // ⭐️ 인수가 없는 기본 생성자
 public class User extends BaseTimeEntity {
 
     @Id
