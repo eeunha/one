@@ -51,6 +51,12 @@ public class Post extends BaseTimeEntity {
         this.content = content;
     }
 
+    // ⭐️ author 필드를 수정할 수 있는 비즈니스 메서드 추가
+    public void setAuthorIdToDummy(User dummyUser) {
+        this.author = dummyUser;
+        // @LastModifiedDate에 의해 updated_at이 자동 갱신됩니다.
+    }
+
     /**
      * Post 객체 생성 시 필수 정보를 설정하는 생성자
      */

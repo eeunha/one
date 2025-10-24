@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -32,4 +33,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // native Query로 DB에서 최신 ViewCount만 가져오기
     @Query(value = "SELECT p.view_count FROM posts p WHERE p.id = :postId", nativeQuery = true)
     Integer findViewCountByIdNative(@Param("postId") Long postId);
+
+    /**
+     * 특정 작성자(User)가 작성한 모든 게시글 목록을 조회합니다.
+     * 'WHERE user_id = ?' 쿼리를 자동 생성합니다.
+     * @param authorId 조회할 작성자의 ID
+     * @return 해당 작성자가 쓴 Post 목록
+     */
+    List<Post> findAllByAuthorId(Long authorId);
 }

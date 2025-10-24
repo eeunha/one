@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor // final 필드(Repository 등)를 위한 생성자 자동 생성
 @Transactional(readOnly = true) // 기본적으로 읽기 전용 트랜잭션 적용 (성능 최적화)
@@ -164,5 +166,21 @@ public class PostService {
 
         // 3. 게시글 작성자 ID와 사용자 ID를 비교하여 true 또는 false 반환
         return userId.equals(post.getAuthor().getId());
+    }
+
+    @Transactional
+    public void anonymizePosts(Long originalUserId, Long dummyUserId) {
+
+        // 1. 더미 User 엔티티 조회 (ID -1L)
+        User dummyUser = userRepository.findById(dummyUserId)
+                .orElseThrow(() -> new RuntimeException("시스템 더미 회원을 찾을 수 없습니다."));
+
+        // 2. 기존 사용자가 작성한 모든 게시글 조회
+        List<Post> userPosts = postRepository.findAllByAuthorId(originalUserId);
+
+        // 3. 익명화 처리
+        userPosts.forEach(post -> post.setAuthorIdToDummy(dummyUser));
+
+        // 4. (Dirty Checking에 의해 자동 저장)
     }
 }

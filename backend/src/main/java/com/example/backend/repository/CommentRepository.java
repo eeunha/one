@@ -19,10 +19,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByPostId(Long postId);
 
     /**
-     * 특정 작성자(User)가 작성한 댓글 목록을 조회합니다.
+     * 특정 작성자(User)가 작성한 모든 댓글 목록을 조회합니다.
      * 'WHERE user_id = ?' 쿼리를 자동 생성합니다.
      * @param authorId 조회할 작성자의 ID
      * @return 해당 작성자가 쓴 Comment 목록
      */
-    List<Comment> findByAuthorId(Long authorId);
+    List<Comment> findAllByAuthorId(Long authorId);
 }
