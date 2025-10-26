@@ -4,7 +4,7 @@ import {useRouter, useRoute} from "vue-router";
 import {useBoardStore} from "@/stores/useBoardStore.js";
 import {useAuthStore} from "@/stores/useAuthStore.js";
 import {useCommentStore} from '@/stores/useCommentStore.js';
-import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue';
+import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import Toast from '@/components/Toast.vue';
 import CommentList from '@/components/CommentList.vue';
 
@@ -259,7 +259,7 @@ const postNotFound = computed(() => !boardStore.isLoading && !boardStore.current
     </div>
 
     <!-- 커스텀 모달 컴포넌트 연결 -->
-    <DeleteConfirmationModal
+    <ConfirmationModal
         :show="isPostDeleteModalOpen"
         :title="'게시글 삭제 확인'"
         :message="'정말로 이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다.'"
@@ -270,7 +270,7 @@ const postNotFound = computed(() => !boardStore.isLoading && !boardStore.current
     />
 
     <!-- 2. ⭐️ 댓글 삭제 커스텀 모달 컴포넌트 ⭐️ -->
-    <DeleteConfirmationModal
+    <ConfirmationModal
         :show="isCommentDeleteModalOpen"
         :title="'댓글 삭제 확인'"
         :message="'정말로 이 댓글을 삭제하시겠습니까? 삭제된 댓글은 복구할 수 없습니다.'"
