@@ -1,12 +1,11 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.WithdrawalRequestDTO;
 import com.example.backend.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,15 +21,14 @@ public class UserController {
     @DeleteMapping("/me")
     public ResponseEntity<Void> withdrawUser(
             @AuthenticationPrincipal Long currentUserId, // ⭐️ JWT에서 추출된 Long 타입의 사용자 ID
-            @RequestBody
-            WithdrawalRequestDTO request       // ⭐️ 요청 본문(Body)에서 Refresh Token을 받습니다.
+            HttpServletRequest request
     ) {
 
-        // 3. 서비스 호출: 현재 인증된 ID와 함께 Refresh Token을 전달합니다.
+        // 서비스 호출: 현재 인증된 ID와 함께 Refresh Token을 전달합니다.
         // 탈퇴 로직은 사용자 인증 정보와 RT 무효화 로직이 모두 필요합니다.
-        userService.withdrawUser(currentUserId, request.getRefreshToken());
+        userService.withdrawUser(currentUserId, request);
 
-        // 4. RESTful 표준 응답: 204 No Content
+        // RESTful 표준 응답: 204 No Content
         return ResponseEntity.noContent().build();
     }
 }

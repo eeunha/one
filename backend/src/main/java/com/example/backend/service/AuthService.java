@@ -6,7 +6,6 @@ import com.example.backend.repository.UserRepository;
 import com.example.backend.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +44,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
+    public String refreshAccessToken(HttpServletRequest request) {
         System.out.println("refreshAccessToken 메소드 진입");
 
         // 1. 쿠키에서 Refresh Token 가져오기
@@ -77,7 +76,7 @@ public class AuthService {
         return newAccessToken;
     }
 
-    private String extractRefreshTokenFromCookie(HttpServletRequest request) {
+    public String extractRefreshTokenFromCookie(HttpServletRequest request) {
 
         System.out.println("extractRefreshTokenFromCookie 메소드 진입");
         

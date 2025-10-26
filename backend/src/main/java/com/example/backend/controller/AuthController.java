@@ -130,7 +130,7 @@ public class AuthController {
 
         System.out.println("refreshToken 메소드 진입");
         try {
-            String newAccessToken = authService.refreshAccessToken(request, response);
+            String newAccessToken = authService.refreshAccessToken(request);
 
             System.out.println("AuthController - newAccessToken token: " + newAccessToken);
 

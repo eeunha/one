@@ -3,8 +3,10 @@ package com.example.backend.service;
 import com.example.backend.dto.LoginResponseDTO;
 import com.example.backend.dto.LoginResultWrapper;
 import com.example.backend.entity.User;
+import com.example.backend.exception.RefreshTokenExpiredException;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -143,28 +145,35 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public void withdrawUser(Long currentUserId, String refreshToken) {
+    public void withdrawUser(Long currentUserId, HttpServletRequest request) {
 
-        // 1. 사용자 엔티티 조회
-        User user = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + currentUserId));
+        // 1. AuthService를 통해 Refresh Token 추출
+        String refreshToken = authService.extractRefreshTokenFromCookie(request);
+
+        // 2. RT가 없으면 예외 처리 (Controller가 처리할 수도 있지만, 서비스에서 처리하는 것이 일관적)
+        if (refreshToken == null) {
+            // 탈퇴를 시도하는 상황에서 RT가 없으면 보안상 로그인이 필요함을 알리는 것이 적절
+            throw new RefreshTokenExpiredException("Refresh token missing. Please login again to withdraw.");
+        }
 
         // 2. Refresh Token 무효화 (보안을 위해 가장 먼저 처리)
         authService.logout(refreshToken);
 
+        // 3. 사용자 엔티티 조회
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + currentUserId));
+
         // AT 블랙리스트 처리 -> 나는 그대로 두기로.
 
-        // 3. Soft Delete 처리 (사용자 접근 권한 영구 박탈)
+        // 4. Soft Delete 처리 (사용자 접근 권한 영구 박탈)
         user.markAsDeleted();
 
-        // 더미 유저 엔티티를 조회하여 ID 가져오기
+        // 5. 연관 데이터 (게시글/댓글) 익명화
         Long dummyUserId = getWithdrawnUser().getId();
-
-        // 4. 연관 데이터 (게시글/댓글) 익명화
         postService.anonymizePosts(currentUserId, dummyUserId);
         commentService.anonymizeComments(currentUserId, dummyUserId);
 
-        // 5. (Dirty Checking에 의해 user 엔티티 자동 저장)
+        // 6. Dirty Checking에 의해 user 엔티티 자동 저장
     }
 
     /**
