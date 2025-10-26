@@ -8,6 +8,10 @@ export const useAuthStore = defineStore('auth', () => {
     const accessToken = ref(null);
     const user = ref(null);
 
+    // ⭐️ [추가] 로딩 및 에러 상태 ⭐️
+    const isLoading = ref(false); // 회원 탈퇴 및 기타 API 요청 로딩 상태
+    const error = ref(null);      // 회원 탈퇴 시 발생하는 에러 메시지 저장
+
     // 토큰 갱신 중 상태 플래그
     const isRefreshing = ref(false);
 
@@ -131,10 +135,42 @@ export const useAuthStore = defineStore('auth', () => {
         // storedAT가 없으면 아무 작업도 하지 않고 로그아웃 상태를 유지합니다.
     };
 
+    /**
+     * 서버에 회원 탈퇴를 요청하고 성공 시 로그인 정보를 초기화합니다.
+     */
+    const withdraw = async () => {
+        if (isLoading.value) return; // 중복 요청 방지
+
+        isLoading.value = true;
+        error.value = null;
+
+        try {
+            // 1. 서비스 계층을 통해 API 호출 (DELETE /users/me)
+            await AuthService.withdraw();
+
+            // 2. 성공 시, Store의 책임: 로그인 정보 초기화 (AT, RT 쿠키 삭제 등)
+            clearLoginInfo();
+
+            console.log('Auth Store: 회원 탈퇴 및 정보 초기화 완료')
+            return true; // 성공적으로 탈퇴했음을 호출자에게 알림 (optional)
+        } catch (err) {
+            console.error('Auth Store: 회원 탈퇴 실패: ', err)
+
+            // 3. 에러 처리 및 던지기 (View에서 상세 에러 메시지를 표시하도록)
+            // 여기서 일반 오류 메시지를 설정할 수 있습니다.
+            error.value = '탈퇴 처리 중 알 수 없는 오류가 발생했습니다.'
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
     // 상태와 액션을 반환
     return {
         accessToken,
         user,
+        isLoading,
+        error,
         isRefreshing,
         isAuthenticated,
         setLoginInfo,
@@ -144,5 +180,6 @@ export const useAuthStore = defineStore('auth', () => {
         isTokenExpiredOrNear,
         refreshTokensWithServer,
         fetchUserProfile,
+        withdraw,
     };
 });
