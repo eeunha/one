@@ -1,5 +1,7 @@
 import { publicClient, authenticatedClient } from "@/utils/axios.js";
 
+const USER_API_BASE_URL = '/users'; // 사용자 기본 경로
+
 /**
  * 순수한 API 통신(Service) 로직을 캡슐화한 객체
  */
@@ -26,5 +28,19 @@ export const AuthService = {
 
         // 프로필 데이터 객체만 반환합니다.
         return response.data;
+    },
+
+    /**
+     * 회원 탈퇴를 요청합니다. (DELETE /api/users/me)
+     * @returns {Promise<void>}
+     */
+    async withdraw() {
+        try {
+            await authenticatedClient.delete(`${USER_API_BASE_URL}/me`);
+            console.log('AuthService: 회원 탈퇴 요청 성공');
+        } catch (error) {
+            console.log('AuthService: 회원 탈퇴 요청 실패: ', error);
+            throw error;
+        }
     }
 };
