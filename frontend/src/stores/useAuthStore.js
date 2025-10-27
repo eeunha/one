@@ -28,6 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
     const setAccessToken = (token) => {
         accessToken.value = token;
         localStorage.setItem('accessToken', token);
+        console.log('setAccessToken - newAccessToken: ', accessToken);
     };
 
     const clearLoginInfo = () => {
@@ -50,8 +51,16 @@ export const useAuthStore = defineStore('auth', () => {
             const expirationTime = decoded.exp; // 초 단위
             const currentTime = Date.now() / 1000; // 초 단위
 
-            // AT는 만료되었거나 만료가 임박(60초 전)했으면 갱신 필요
-            return expirationTime < currentTime || (expirationTime - currentTime < bufferSeconds);
+            const LEEWAY_SECONDS = 5; // 클라이언트-서버 시간 오차를 위한 여유분 (예: 5초)
+
+            // 1. 토큰이 '이미' 만료되었는지 확인 (현재 시간 - 5초)
+            //    클라이언트 시간이 서버보다 빠를 수 있으므로 5초 여유분(leeway)을 줍니다.
+            const isExpired = expirationTime < (currentTime - LEEWAY_SECONDS);
+
+            // 2. 만료가 임박했는지 확인 (bufferSeconds 이내)
+            const isNear = (expirationTime - currentTime) < bufferSeconds;
+
+            return isExpired || isNear;
 
         } catch (error) {
             console.error("JWT decoding failed:", error);
@@ -74,7 +83,8 @@ export const useAuthStore = defineStore('auth', () => {
             const newAT = await AuthService.refreshTokens();
 
             // 갱신 성공 시, 새로운 AT를 localStorage에 저장
-            localStorage.setItem('accessToken', newAT);
+
+            setAccessToken(newAt);
 
             return newAT;
         } catch (error) {
@@ -111,8 +121,7 @@ export const useAuthStore = defineStore('auth', () => {
                     console.log("AT expired/near. Attempting RT refresh via server...");
 
                     // 2. AT 만료 시, RT 갱신 요청을 시도합니다. (RT 유효성은 서버가 판단)
-                    const newAT = await refreshTokensWithServer();
-                    setAccessToken(newAT);
+                    await refreshTokensWithServer();
 
                 } else {
                     console.log('AT 유효');
