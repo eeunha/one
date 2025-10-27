@@ -108,10 +108,9 @@ authenticatedClient.interceptors.response.use(
             router.push('/login');
             return Promise.reject(error); // 에러를 최종적으로 반환하여 체인 종료
         }
-        // ⭐⭐ 무한 루프 방지 로직 종료 ⭐⭐
 
         // 4. 에러 응답이 존재하고, 상태 코드가 401이며 아직 재시도하지 않은 요청인지 확인
-        if (error.response && (error.response.status === 401 || error.response.status === 403) && !originalRequest._retry) {
+        if (error.response && error.response.status === 401 && !originalRequest._retry) {
             // 5. 재시도 플래그 설정 (무한 루프 방지)
             originalRequest._retry = true;
 
