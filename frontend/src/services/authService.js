@@ -35,9 +35,11 @@ export const AuthService = {
      * @returns {Promise<void>}
      */
     async withdraw() {
+        console.log('authService - withdraw 진입')
         try {
             await authenticatedClient.delete(`${USER_API_BASE_URL}/me`);
             console.log('AuthService: 회원 탈퇴 요청 성공');
+
         } catch (error) {
             console.log('AuthService: 회원 탈퇴 요청 실패: ', error);
             throw error;
