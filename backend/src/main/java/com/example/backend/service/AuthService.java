@@ -8,6 +8,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -24,7 +25,7 @@ public class AuthService {
      * 로그아웃: DB에서 사용자의 리프레시 토큰을 무효화합니다.
      * @param refreshToken 쿠키에서 추출한 리프레시 토큰
      */
-    @Transactional // 쓰기 작업이 필요합니다.
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logout (String refreshToken) {
 
         System.out.println("AuthService - logout 메소드 진입");
@@ -32,15 +33,21 @@ public class AuthService {
         // 1. 리프레시 토큰에서 사용자 id 추출
         Long userId = jwtUtil.getUserIdFromToken(refreshToken);
 
+        System.out.println("AuthService - userId: " + userId);
+
         // 2. userId를 이용해 사용자 엔티티 찾기
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found the given refresh token."));
+
+        System.out.println("AuthService - user: " + user);
 
         // 3. 사용자 엔티티의 리프레시 토큰을 null로 설정하여 무효화한다.
         // ⭐️ 개선: setter 대신 엔티티 비즈니스 메서드 사용
         user.updateRefreshToken(null, null);
 
-        // 4. JPA의 변경 감지(Dirty Checking)가 처리하므로 save()는 생략 가능하지만, 명시적으로 호출해도 무방합니다.
-        userRepository.save(user);
+        System.out.println("AuthService - user.getRefreshTokenExpiry: " + user.getRefreshTokenExpiry());
+
+        // ⭐️ 디버깅용 로그 추가 ⭐️
+        System.out.println("AuthService: RT 무효화 성공 - userId: " + userId);
     }
 
     @Transactional

@@ -22,9 +22,10 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+//@Transactional(readOnly = true)
 public class UserService implements UserDetailsService {
 
+    private final UserWithdrawalService userWithdrawalService;
     @Value("${jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenValidityInSeconds;
 
@@ -34,6 +35,7 @@ public class UserService implements UserDetailsService {
     private final AuthService authService;
     private final PostService postService;
     private final CommentService commentService;
+    private final UserWithdrawalService withdrawalService;
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
@@ -109,6 +111,7 @@ public class UserService implements UserDetailsService {
         return new LoginResultWrapper(loginResponseDTO, refreshToken);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         
@@ -116,12 +119,23 @@ public class UserService implements UserDetailsService {
         
         // userId는 Long 타입이므로 String으로 받은 username을 Long으로 변환
         Long userId = Long.parseLong(username);
+
+        System.out.println("userId: " + userId);;
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId));
+
+        System.out.println("user: " + user);;
+
+        if (user.getDeletedAt() != null) {
+            // 이미 탈퇴된 계정이라면, 토큰이 유효해도 사용자를 찾을 수 없다고 처리
+            throw new UsernameNotFoundException("User is deleted at: " + user.getDeletedAt());
+        }
 
         // ⭐️ User 객체에서 Role(권한) 정보를 가져와 SimpleGrantedAuthority로 변환합니다.
         // 현재는 단일 Role(String) 필드가 있다고 가정하고 List로 변환합니다.
         List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getRole()));
+
+        System.out.println("authorities: " + authorities);;
 
         // User 객체를 UserDetails로 변환하여 반환
         return new org.springframework.security.core.userdetails.User(
@@ -137,6 +151,7 @@ public class UserService implements UserDetailsService {
      * @param userId 사용자의 고유 ID
      * @return User 엔티티
      */
+    @Transactional(readOnly = true)
     public User getUserByUserId(Long userId) {
         System.out.println("UserService - getUserByUserId 메소드 진입");
         
@@ -146,9 +161,13 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void withdrawUser(Long currentUserId, HttpServletRequest request) {
+        System.out.println("UserService - withdrawUser 진입");
+        System.out.println("UserService - currentUserId: " + currentUserId);
 
         // 1. AuthService를 통해 Refresh Token 추출
         String refreshToken = authService.extractRefreshTokenFromCookie(request);
+
+        System.out.println("UserService - withdrawUser - extractRefreshTokenFromCookie 종료");
 
         // 2. RT가 없으면 예외 처리 (Controller가 처리할 수도 있지만, 서비스에서 처리하는 것이 일관적)
         if (refreshToken == null) {
@@ -156,24 +175,43 @@ public class UserService implements UserDetailsService {
             throw new RefreshTokenExpiredException("Refresh token missing. Please login again to withdraw.");
         }
 
+        System.out.println("UserService - withdrawUser - rt 존재");
+
         // 2. Refresh Token 무효화 (보안을 위해 가장 먼저 처리)
         authService.logout(refreshToken);
 
+        System.out.println("UserService - withdrawUser - 로그아웃 완료");
+
         // 3. 사용자 엔티티 조회
-        User user = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + currentUserId));
+//        User user = userRepository.findById(currentUserId)
+//                .orElseThrow(() -> new RuntimeException("User not found with id: " + currentUserId));
 
-        // AT 블랙리스트 처리 -> 나는 그대로 두기로.
+        userWithdrawalService.executeWithdrawal(currentUserId);
 
-        // 4. Soft Delete 처리 (사용자 접근 권한 영구 박탈)
-        user.markAsDeleted();
+        System.out.println("UserService - withdrawUser - 최종 완료");
 
-        // 5. 연관 데이터 (게시글/댓글) 익명화
-        Long dummyUserId = getWithdrawnUser().getId();
-        postService.anonymizePosts(currentUserId, dummyUserId);
-        commentService.anonymizeComments(currentUserId, dummyUserId);
-
-        // 6. Dirty Checking에 의해 user 엔티티 자동 저장
+//        // ⭐️ 3. 사용자 엔티티 조회/참조 ⭐️
+//        // ❗️ UserRepository를 통해 엔티티를 찾지 않고, findById 대신 getOne(JPA 2.1) 또는 getReference(JPA 2.2+)를 사용해 봅니다.
+//        // getReference는 DB 조회를 지연시키고 프록시 객체만 가져오므로, 즉시적인 충돌을 피할 수 있습니다.
+//        User user = userRepository.getReferenceById(currentUserId);
+//
+//        System.out.println("UserService - withdrawUser - 해당 사용자 엔티티 존재");
+//
+//        // AT 블랙리스트 처리 -> 나는 그대로 두기로.
+//
+//        // 4. Soft Delete 처리 (사용자 접근 권한 영구 박탈)
+//        user.markAsDeleted();
+//
+//        System.out.println("UserService - withdrawUser - markAsDeleted 완료");
+//
+//        // 5. 연관 데이터 (게시글/댓글) 익명화
+//        Long dummyUserId = getWithdrawnUser().getId();
+//        postService.anonymizePosts(currentUserId, dummyUserId);
+//        commentService.anonymizeComments(currentUserId, dummyUserId);
+//
+//        System.out.println("UserService - withdrawUser - 연관 데이터 익명화 완료");
+//
+//        // 6. Dirty Checking에 의해 user 엔티티 자동 저장
     }
 
     /**
@@ -181,6 +219,7 @@ public class UserService implements UserDetailsService {
      * @return 더미 회원 User 엔티티
      * @throws RuntimeException 더미 회원이 존재하지 않을 경우
      */
+    @Transactional(readOnly = true)
     public User getWithdrawnUser() {
         return userRepository.findByEmail(WITHDRAWN_USER_EMAIL)
                 .orElseThrow(() -> new RuntimeException("시스템 더미 탈퇴 회원(ID)를 찾을 수 없습니다."));
