@@ -118,20 +118,20 @@ authenticatedClient.interceptors.response.use(
             try {
                 // 6. Refresh Token으로 Access Token 재발급 요청
                 //    쿠키(HttpOnly)에 저장된 Refresh Token이 자동 전송됨
-                const refreshResponse = await instance.post('/auth/refresh', {});
+                const refreshResponse = await authenticatedClient.post('/auth/refresh', {});
 
                 // 7. 새로 발급받은 Access Token 추출
                 const newAccessToken = refreshResponse.data.accessToken;
                 console.log('axios - newAccessToken: ', newAccessToken);
 
-                // ⭐ Store에 새 Access Token을 저장하는 로직이 필요합니다! (현재 코드에는 없음)
+                // Store에 새 Access Token을 저장
                 authStore.setAccessToken(newAccessToken);
 
                 // 8. 원래 요청 헤더에 새로운 Access Token 설정
                 originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
 
                 // 9. 원래 요청 재시도
-                return instance(originalRequest); // 여기도 instance 사용
+                return authenticatedClient(originalRequest);
             } catch (refreshError) {
                 console.log('axios.js - refreshError');
 
