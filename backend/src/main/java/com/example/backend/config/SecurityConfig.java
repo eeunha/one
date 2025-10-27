@@ -1,6 +1,7 @@
 package com.example.backend.config;
 
 import com.example.backend.filter.JwtTokenFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -42,6 +43,8 @@ public class SecurityConfig {
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
 
+                        .requestMatchers(HttpMethod.DELETE, "/users/me").hasRole("USER")
+
                         // 1. 모두 허용 (permitAll): 비인증 사용자 접근 가능 경로
                         //    - 로그인/리프레시, 게시글 목록(GET /posts), 게시글 상세(GET /posts/{postId})
                         .requestMatchers(
@@ -61,12 +64,23 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/profile",
                                 "/auth/logout",
-                                "/posts/**",
-                                "/users/**"
+                                "/posts/**"
                         ).authenticated()
 
                         // 4. 나머지 모든 요청 (최종 fallback)
                         .anyRequest().authenticated()
+                )
+
+                // ⭐️ 5. 예외 처리 설정 추가 ⭐️
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        // 인증 실패 (토큰 없음/만료) 시 401 Unauthorized 반환
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                        )
+                        // 인가 실패 (권한 부족) 시 403 Forbidden 반환
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN)
+                        )
                 );
         return http.build();
     }
