@@ -104,16 +104,10 @@ public class CommentService {
     @Transactional
     public void anonymizeComments(Long originalUserId, Long dummyUserId) {
 
-        // 1. 더미 User 엔티티 조회 (ID -1L)
-        User dummyUser = userRepository.findById(dummyUserId)
-                .orElseThrow(() -> new RuntimeException("시스템 더미 회원을 찾을 수 없습니다."));
+        System.out.println("CommentSErvice - anonymizeComments 진입");
 
-        // 2. 기존 사용자가 작성한 모든 게시글 조회
-        List<Comment> userComments = commentRepository.findAllByAuthorId(originalUserId);
+        int updatedCount = commentRepository.bulkUpdateAuthorIdToDummy(originalUserId, dummyUserId);
 
-        // 3. 익명화 처리
-        userComments.forEach(comment -> comment.setAuthorIdToDummy(dummyUser));
-
-        // 4. (Dirty Checking에 의해 자동 저장)
+        System.out.println("CommentService: 총 " + updatedCount + "개의 댓글 작성자 익명화 완료 (벌크 업데이트)");
     }
 }

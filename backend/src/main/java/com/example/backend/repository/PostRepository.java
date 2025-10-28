@@ -17,9 +17,6 @@ import java.util.Optional;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    // JpaRepository에 이미 Page<Post> findAll(Pageable pageable)이 정의되어 있으므로,
-    // 페이지네이션을 위한 기본 findAll 메서드는 별도로 선언하지 않아도 됩니다.
-
     // 게시글 조회 시 updated_at 변경을 막기 위해, 조회수 업데이트는 별도의 Native Query로 처리
     @Modifying // DML 쿼리임을 명시 (데이터 변경)
     @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
@@ -35,10 +32,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Integer findViewCountByIdNative(@Param("postId") Long postId);
 
     /**
-     * 특정 작성자(User)가 작성한 모든 게시글 목록을 조회합니다.
-     * 'WHERE user_id = ?' 쿼리를 자동 생성합니다.
-     * @param authorId 조회할 작성자의 ID
-     * @return 해당 작성자가 쓴 Post 목록
+     * 특정 작성자(User)가 작성한 모든 게시글의 user_id를 더미 id로 수정합니다.
+     * @param originalId 현재 작성자의 ID
+     * @param dummyId 수정할 작성자의 더미 ID
+     * @return 수정한 Post 개수
      */
-    List<Post> findAllByAuthorId(Long authorId);
+    // @where 때문에 삭제된 것은 변경되지 않았음. 그래서 nativeQuery 사용.
+    @Modifying
+    @Query(value = "UPDATE posts SET user_id = :dummyId WHERE user_id = :originalId", nativeQuery = true)
+    int bulkUpdateAuthorIdToDummy(@Param("originalId") Long originalId, @Param("dummyId") Long dummyId);
 }

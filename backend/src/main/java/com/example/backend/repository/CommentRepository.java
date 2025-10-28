@@ -2,6 +2,9 @@ package com.example.backend.repository;
 
 import com.example.backend.entity.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -19,10 +22,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByPostId(Long postId);
 
     /**
-     * 특정 작성자(User)가 작성한 모든 댓글 목록을 조회합니다.
-     * 'WHERE user_id = ?' 쿼리를 자동 생성합니다.
-     * @param authorId 조회할 작성자의 ID
-     * @return 해당 작성자가 쓴 Comment 목록
+     * 특정 작성자(User)가 작성한 모든 댓글의 user_id를 더미 id로 수정합니다.
+     * @param originalId 현재 작성자의 ID
+     * @param dummyId 수정할 작성자의 더미 ID
+     * @return 수정한 Comment 개수
      */
-    List<Comment> findAllByAuthorId(Long authorId);
+    // @where 때문에 삭제된 것은 변경되지 않았음. 그래서 nativeQuery 사용.
+    @Modifying
+    @Query(value = "UPDATE comments SET user_id = :dummyId WHERE user_id = :originalId", nativeQuery = true)
+    int bulkUpdateAuthorIdToDummy(@Param("originalId") Long originalId, @Param("dummyId") Long dummyId);
 }
