@@ -170,17 +170,10 @@ public class PostService {
 
     @Transactional
     public void anonymizePosts(Long originalUserId, Long dummyUserId) {
+        System.out.println("PostService - anonymizePosts 호출");
 
-        // 1. 더미 User 엔티티 조회 (ID -1L)
-        User dummyUser = userRepository.findById(dummyUserId)
-                .orElseThrow(() -> new RuntimeException("시스템 더미 회원을 찾을 수 없습니다."));
+        int updatedCount = postRepository.bulkUpdateAuthorIdToDummy(originalUserId, dummyUserId);
 
-        // 2. 기존 사용자가 작성한 모든 게시글 조회
-        List<Post> userPosts = postRepository.findAllByAuthorId(originalUserId);
-
-        // 3. 익명화 처리
-        userPosts.forEach(post -> post.setAuthorIdToDummy(dummyUser));
-
-        // 4. (Dirty Checking에 의해 자동 저장)
+        System.out.println("PostService: 총 " + updatedCount + "개의 게시글 작성자 익명화 완료 (벌크 업데이트)");
     }
 }

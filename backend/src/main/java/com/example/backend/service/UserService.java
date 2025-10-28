@@ -82,15 +82,18 @@ public class UserService implements UserDetailsService {
         // 1. 이메일로 기존 사용자가 있는지 조회합니다. 없으면 새로 생성합니다.
         User user = userRepository.findByEmail(email).orElse(null);
 
-        if (user != null && user.getDeletedAt() != null) {
+        if (user != null) {
+            if (user.getDeletedAt() != null) {
+                // 삭제된 사용자
+                System.out.println("UserService: 탈퇴된 회원 재로그인 시도 차단 - Email: " + email);
 
-            // 삭제된 사용자
-            System.out.println("UserService: 탈퇴된 회원 재로그인 시도 차단 - Email: " + email);
-
-            // 🚨 Custom Exception을 던져서 프론트에 적절한 메시지를 전달합니다.
-            throw new UserWithdrawnException("탈퇴 처리된 회원입니다. 재로그인이 불가능합니다.");
+                // 🚨 Custom Exception을 던져서 프론트에 적절한 메시지를 전달합니다.
+                throw new UserWithdrawnException("탈퇴 처리된 회원입니다. 재로그인이 불가능합니다.");
+            }
+            System.out.println("UserService: 기존 사용자 재로그인 - Email: " + email);
         } else {
             // 최초 로그인
+            System.out.println("UserService: 최초 로그인 - Email: " + email);
             User newUser = User.createSocialUser(email, name, "google", snsId, Role.ROLE_USER);
             user = userRepository.save(newUser);
         }
