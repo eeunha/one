@@ -97,10 +97,10 @@ onUnmounted(() => {
       </p>
 
       <!-- 액션 버튼 -->
-      <div class="flex justify-end space-x-4">
+      <div class="flex justify-center space-x-4">
         <!-- 취소 버튼 -->
         <button
-            @click="close"
+            v-if="cancelButtonText && cancelButtonText.trim() !== ''" @click="close"
             :disabled="isLoading"
             class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-200 disabled:opacity-50"
         >
