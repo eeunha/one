@@ -82,7 +82,20 @@ public class User extends BaseTimeEntity {
     }
 
     public void markAsWithdrawn() {
+
+        String uniqueAnonEmail = "deleted_" + this.id + "@withdrawn.com";
+
+        this.email = uniqueAnonEmail;
+        this.name = "탈퇴회원";
+        this.password = null;
+
+        // sns 정보 삭제
+        this.snsId = null;
+        this.snsProvider = null;
+
+        // 권한 변경 (재로그인 방지)
         this.role = Role.ROLE_WITHDRAWN;
+
         super.markAsDeleted();
     }
 }
