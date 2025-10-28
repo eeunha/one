@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.dto.LoginResponseDTO;
 import com.example.backend.dto.LoginResultWrapper;
+import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
 import com.example.backend.exception.RefreshTokenExpiredException;
 import com.example.backend.repository.UserRepository;
@@ -52,7 +53,7 @@ public class UserService implements UserDetailsService {
                     .name("탈퇴한 회원")
                     .snsProvider("system")
                     .snsId("-1")
-                    .role("ROLE_WITHDRAWN")
+                    .role(Role.ROLE_WITHDRAWN)
                     .build();
 
             // 2. save()를 통해 DB가 안전하게 INSERT 및 ID 자동 할당
@@ -83,7 +84,7 @@ public class UserService implements UserDetailsService {
                     // User newUser = User.builder()...build(); // 기존 코드 삭제
 
                     // 🔥 정적 팩토리 메서드 또는 생성자를 사용하여 JPA가 Auditing 필드를 주입할 기회를 줍니다.
-                    User newUser = User.createSocialUser(email, name, "google", snsId, "ROLE_USER");
+                    User newUser = User.createSocialUser(email, name, "google", snsId, Role.ROLE_USER);
 
                     return userRepository.save(newUser);
                 });
@@ -102,7 +103,7 @@ public class UserService implements UserDetailsService {
         );
         userRepository.save(user);
 
-        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(accessToken, user.getId(), user.getEmail(), user.getName(), user.getRole());
+        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(accessToken, user.getId(), user.getEmail(), user.getName(), user.getRole().name());
 
         // 4. 토큰과 프로필 정보를 DTO에 담아서 반환합니다.
         // 이 DTO는 AuthController에서 사용됩니다.
@@ -133,7 +134,7 @@ public class UserService implements UserDetailsService {
 
         // ⭐️ User 객체에서 Role(권한) 정보를 가져와 SimpleGrantedAuthority로 변환합니다.
         // 현재는 단일 Role(String) 필드가 있다고 가정하고 List로 변환합니다.
-        List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getRole()));
+        List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()));
 
         System.out.println("authorities: " + authorities);;
 
@@ -189,29 +190,6 @@ public class UserService implements UserDetailsService {
         userWithdrawalService.executeWithdrawal(currentUserId);
 
         System.out.println("UserService - withdrawUser - 최종 완료");
-
-//        // ⭐️ 3. 사용자 엔티티 조회/참조 ⭐️
-//        // ❗️ UserRepository를 통해 엔티티를 찾지 않고, findById 대신 getOne(JPA 2.1) 또는 getReference(JPA 2.2+)를 사용해 봅니다.
-//        // getReference는 DB 조회를 지연시키고 프록시 객체만 가져오므로, 즉시적인 충돌을 피할 수 있습니다.
-//        User user = userRepository.getReferenceById(currentUserId);
-//
-//        System.out.println("UserService - withdrawUser - 해당 사용자 엔티티 존재");
-//
-//        // AT 블랙리스트 처리 -> 나는 그대로 두기로.
-//
-//        // 4. Soft Delete 처리 (사용자 접근 권한 영구 박탈)
-//        user.markAsDeleted();
-//
-//        System.out.println("UserService - withdrawUser - markAsDeleted 완료");
-//
-//        // 5. 연관 데이터 (게시글/댓글) 익명화
-//        Long dummyUserId = getWithdrawnUser().getId();
-//        postService.anonymizePosts(currentUserId, dummyUserId);
-//        commentService.anonymizeComments(currentUserId, dummyUserId);
-//
-//        System.out.println("UserService - withdrawUser - 연관 데이터 익명화 완료");
-//
-//        // 6. Dirty Checking에 의해 user 엔티티 자동 저장
     }
 
     /**

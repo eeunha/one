@@ -80,7 +80,7 @@ public class AuthController {
                     user.getId(),
                     user.getName(),
                     user.getEmail(),
-                    user.getRole()
+                    user.getRole().name()
             );
 
             return ResponseEntity.ok(responseDto); // 200 OK

@@ -50,14 +50,14 @@ public class JwtUtil {
         System.out.println("JwtUtil - generateAccessToken 메소드 진입");
         System.out.println("accessTokenValidity: " + accessTokenValidityInSeconds);
 
-        return createToken(user.getId(), user.getRole(), accessTokenValidityInSeconds);
+        return createToken(user.getId(), user.getRole().name(), accessTokenValidityInSeconds);
     }
 
     public String generateRefreshToken(User user) {
         System.out.println("JwtUtil - generateRefreshToken 메소드 진입");
         System.out.println("refreshTokenValidity: " + refreshTokenValidityInSeconds);
 
-        return createToken(user.getId(), user.getRole(), refreshTokenValidityInSeconds);
+        return createToken(user.getId(), user.getRole().name(), refreshTokenValidityInSeconds);
     }
 
     public Claims parseClaims(String token) {
