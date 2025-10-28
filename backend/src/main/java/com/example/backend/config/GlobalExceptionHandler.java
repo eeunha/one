@@ -1,6 +1,7 @@
 package com.example.backend.config;
 
 import com.example.backend.exception.RefreshTokenExpiredException;
+import com.example.backend.exception.UserWithdrawnException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -79,5 +80,20 @@ public class GlobalExceptionHandler {
 
         // 그 외의 IllegalArgumentException은 400 (Bad Request)으로 처리합니다.
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
+    // ⭐️ UserWithdrawnException 처리: 탈퇴 회원 재로그인 시도 - 403 Forbidden ⭐️
+    @ExceptionHandler(UserWithdrawnException.class)
+    public ResponseEntity<Map<String, String>> handleUserWithdrawnException(UserWithdrawnException e) {
+        Map<String, String> errorDetails = new HashMap<>();
+
+        // 프론트엔드가 오류 유형을 명확히 판단하도록 "error" 필드에 특정 코드를 넣습니다.
+        errorDetails.put("error", "User Withdrawn");
+
+        // 사용자에게 보여줄 메시지를 그대로 반환합니다.
+        errorDetails.put("message", e.getMessage());
+
+        // 403 Forbidden (계정 상태 문제로 인한 접근 금지) 상태 반환
+        return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
     }
 }
