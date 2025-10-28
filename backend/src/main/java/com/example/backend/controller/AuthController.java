@@ -1,10 +1,10 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.LoginResponseDTO;
 import com.example.backend.dto.LoginResultWrapper;
 import com.example.backend.dto.ProfileResponseDTO;
 import com.example.backend.entity.User;
 import com.example.backend.exception.RefreshTokenExpiredException;
+import com.example.backend.exception.UserWithdrawnException;
 import com.example.backend.service.AuthService;
 import com.example.backend.service.OAuthService;
 import com.example.backend.service.UserService;
@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 // 로그인 된(인증된) 사용자의 상태 관리 및 필요한 데이터 제공
@@ -42,23 +43,36 @@ public class AuthController {
      * @return JWT와 사용자 프로필 정보가 담긴 DTO
      */
     @PostMapping("/google/login")
-    public ResponseEntity<LoginResponseDTO> googleLogin(
+    public ResponseEntity<?> googleLogin(
             @RequestBody Map<String, String> requestBody, HttpServletResponse response
     ) {
-        String code = requestBody.get("code");
-        
         System.out.println("googleLogin 메소드 진입");
 
-        // 1. 서비스로부터 Wrapper 객체를 받습니다.
-        LoginResultWrapper resultWrapper = oAuthService.getJwtAndProfileResponse(code);
+        String code = requestBody.get("code");
 
-        System.out.println("로그인 후 refresh: " + resultWrapper.getRefreshToken());
+        try {
+            // 1. 서비스로부터 Wrapper 객체를 받습니다.
+            LoginResultWrapper resultWrapper = oAuthService.getJwtAndProfileResponse(code);
 
-        // 2. Wrapper에서 RT를 꺼내 HttpOnly 쿠키에 담아 헤더로 보냅니다.
-        cookieUtil.addJwtCookie(response, "refreshToken", resultWrapper.getRefreshToken(), refreshTokenValidityInSeconds); // 1일 20초 (s)
+            System.out.println("로그인 후 refresh: " + resultWrapper.getRefreshToken());
 
-        // 3. Wrapper에서 응답 DTO를 꺼내 바디로 반환합니다.
-        return ResponseEntity.ok(resultWrapper.getLoginResponseDTO());
+            // 2. Wrapper에서 RT를 꺼내 HttpOnly 쿠키에 담아 헤더로 보냅니다.
+            cookieUtil.addJwtCookie(response, "refreshToken", resultWrapper.getRefreshToken(), refreshTokenValidityInSeconds); // 1일 20초 (s)
+
+            // 3. Wrapper에서 응답 DTO를 꺼내 바디로 반환합니다.
+            return ResponseEntity.ok(resultWrapper.getLoginResponseDTO());
+        } catch (UserWithdrawnException e) {
+            // ⭐️ UserWithdrawnException 발생 시 403과 메시지를 직접 반환 ⭐️
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "UserWithdrawn");
+            errorResponse.put("message", e.getMessage());
+
+            return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN); // 403
+
+        } catch (Exception e) {
+            // 그 외 예상치 못한 모든 오류를 500으로 처리
+            return new ResponseEntity<>("로그인 처리 중 알 수 없는 오류 발생", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     // 새로고침 시 사용자 정보를 복구하는 API
@@ -66,7 +80,7 @@ public class AuthController {
     public ResponseEntity<?> getProfile(Authentication authentication) {
 
         System.out.println("getProfile 메소드 진입");
-        
+
         try {
             // Spring Security의 Authentication 객체에서 사용자 ID 추출
             String userIdFromToken = authentication.getName(); // JWT 토큰의 subject(사용자 ID)를 가져옴

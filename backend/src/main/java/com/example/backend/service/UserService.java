@@ -5,6 +5,7 @@ import com.example.backend.dto.LoginResultWrapper;
 import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
 import com.example.backend.exception.RefreshTokenExpiredException;
+import com.example.backend.exception.UserWithdrawnException;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -79,15 +80,20 @@ public class UserService implements UserDetailsService {
         System.out.println("UserService - processGoogleLogin 진입");
         
         // 1. 이메일로 기존 사용자가 있는지 조회합니다. 없으면 새로 생성합니다.
-        User user = userRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    // User newUser = User.builder()...build(); // 기존 코드 삭제
+        User user = userRepository.findByEmail(email).orElse(null);
 
-                    // 🔥 정적 팩토리 메서드 또는 생성자를 사용하여 JPA가 Auditing 필드를 주입할 기회를 줍니다.
-                    User newUser = User.createSocialUser(email, name, "google", snsId, Role.ROLE_USER);
+        if (user != null && user.getDeletedAt() != null) {
 
-                    return userRepository.save(newUser);
-                });
+            // 삭제된 사용자
+            System.out.println("UserService: 탈퇴된 회원 재로그인 시도 차단 - Email: " + email);
+
+            // 🚨 Custom Exception을 던져서 프론트에 적절한 메시지를 전달합니다.
+            throw new UserWithdrawnException("탈퇴 처리된 회원입니다. 재로그인이 불가능합니다.");
+        } else {
+            // 최초 로그인
+            User newUser = User.createSocialUser(email, name, "google", snsId, Role.ROLE_USER);
+            user = userRepository.save(newUser);
+        }
 
         // 2. JWT 토큰을 생성합니다.
         // JWT의 주체(subject)는 보안을 위해 사용자 ID를 사용합니다.

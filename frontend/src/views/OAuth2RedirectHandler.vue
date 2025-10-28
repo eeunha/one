@@ -32,6 +32,18 @@ onMounted(async () => {
 
     } catch (err) {
       console.error("로그인 중 오류가 발생했습니다:", err);
+
+      if (err.response && err.response.status === 403) {
+        const errorData = err.response.data;
+        if (errorData.error === 'UserWithdrawn') {
+          alert(errorData.message);
+        } else {
+          alert('접근 권한이 없습니다.');
+        }
+      } else {
+        alert("로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+      }
+
       // 실패하면 로그인 페이지로
       router.push('/login');
     }
