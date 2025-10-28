@@ -32,8 +32,9 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 100)
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String role = "ROLE_USER";
+    private Role role = Role.ROLE_USER;
 
     @Column(name = "refresh_token")
     private String refreshToken;
@@ -60,7 +61,7 @@ public class User extends BaseTimeEntity {
         this.email = email;
         this.password = password; // 실제로는 암호화된 비밀번호가 전달되어야 함
         this.name = name;
-        this.role = "ROLE_USER";
+        this.role = Role.ROLE_USER;
     }
 
     // 소셜 사용자 업데이트 메서드 (토큰 업데이트 등)
@@ -70,7 +71,7 @@ public class User extends BaseTimeEntity {
     }
 
     // 사용자 생성 메서드
-    public static User createSocialUser(String email, String name, String snsProvider, String snsId, String role) {
+    public static User createSocialUser(String email, String name, String snsProvider, String snsId, Role role) {
         User user = new User(); // @NoArgsConstructor 사용
         user.email = email;
         user.name = name;
@@ -78,5 +79,10 @@ public class User extends BaseTimeEntity {
         user.snsId = snsId;
         user.role = role;
         return user;
+    }
+
+    public void markAsWithdrawn() {
+        this.role = Role.ROLE_WITHDRAWN;
+        super.markAsDeleted();
     }
 }

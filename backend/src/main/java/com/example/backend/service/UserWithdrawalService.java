@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,6 @@ public class UserWithdrawalService {
     private final CommentService commentService;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-//    @Transactional
     public void executeWithdrawal(Long currentUserId) {
 
         System.out.println("UserWithdrawalService - executeWithdrawal 진입 (새 트랜잭션)");
@@ -34,8 +34,9 @@ public class UserWithdrawalService {
 
             System.out.println("UserWithdrawalService - 사용자 엔티티 조회 성공");
 
-            // 4. Soft Delete 처리 (Dirty Checking 대상)
-            user.markAsDeleted();
+            // 4. Role 변경 및 Soft Delete 처리 (Dirty Checking 대상)
+//            user.markAsDeleted();
+            user.markAsWithdrawn();
 
             System.out.println("UserWithdrawalService - markAsDeleted 완료");
 
