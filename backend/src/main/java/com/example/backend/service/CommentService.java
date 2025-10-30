@@ -34,7 +34,11 @@ public class CommentService {
                 .orElseThrow(() -> new EntityNotFoundException("게시글(Post ID: " + postId + ")을 찾을 수 없습니다."));
 
         // 2. Comment 엔티티 생성 및 저장
-        Comment newComment = new Comment(content, author, post);
+        Comment newComment = Comment.builder()
+                .content(content)
+                .author(author)
+                .post(post)
+                .build();
         return commentRepository.save(newComment);
     }
 
@@ -82,9 +86,10 @@ public class CommentService {
     }
 
     // === ⭐️ Spring Security SpEL에서 호출할 게시글 소유자 확인 메서드 ===
+
     /**
      * 특정 댓글의 작성자가 현재 인증된 사용자와 일치하는지 확인합니다.
-     * @param commentId 확인할 댓글 ID
+     * @param commentId     확인할 댓글 ID
      * @param principalName 현재 인증된 사용자의 ID (String 형태)
      * @return 일치하면 true, 아니면 false
      */

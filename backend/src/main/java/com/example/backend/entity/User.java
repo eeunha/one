@@ -59,13 +59,6 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "author")
     private List<Comment> comments = new ArrayList<>();
 
-    // 비밀번호 기반 사용자 생성자 (필수 필드)
-    public User(String email, String password, String name) {
-        this.email = email;
-        this.password = password; // 실제로는 암호화된 비밀번호가 전달되어야 함
-        this.name = name;
-        this.role = Role.ROLE_USER;
-    }
     @Builder.Default
     @OneToMany(mappedBy = "user", orphanRemoval = true)
     private List<Like> likes = new ArrayList<>();
