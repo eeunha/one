@@ -86,5 +86,29 @@ export const BoardService = {
             console.error('Failed to delete post: ', error);
             throw error;
         }
+    },
+
+    async likePost(postId) {
+        console.log('boardService - likePost 진입')
+
+        try {
+            const response = await authenticatedClient.post(`${BOARD_API_BASE_URL}/${postId}/like`)
+            return response.data;
+        } catch (error) {
+            console.error('Failed to like post: ', error)
+            throw error
+        }
+    },
+
+    async unlikePost(postId) {
+        console.log('boardService - unlikePost 진입')
+
+        try {
+            const response = await authenticatedClient.delete(`${BOARD_API_BASE_URL}/${postId}/like`)
+            return response.data;
+        } catch (error) {
+            console.error('Failed to unlike post: ', error)
+            throw error
+        }
     }
 }

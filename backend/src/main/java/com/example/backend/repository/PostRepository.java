@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -22,6 +21,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
     void incrementViewCount(@Param("postId") Long postId);
 
+    // 좋아요 눌렀을 때 updated_at 변경을 막기 위해, 조회수 업데이트는 별도의 Native Query로 처리
+    @Modifying
+    @Query("UPDATE Post p SET p.likeCount = p.likeCount + 1 WHERE p.id = :postId")
+    void incrementLikeCount(@Param("postId") Long postId);
+
     // 게시글 ID로 게시글과 작성자(User)를 한 번의 쿼리로 가져옵니다.
     @Query("SELECT p FROM Post p JOIN FETCH p.author WHERE p.id = :postId")
     Optional<Post> findPostWithAuthorById(@Param("postId") Long postId);
@@ -30,6 +34,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // native Query로 DB에서 최신 ViewCount만 가져오기
     @Query(value = "SELECT p.view_count FROM posts p WHERE p.id = :postId", nativeQuery = true)
     Integer findViewCountByIdNative(@Param("postId") Long postId);
+
+    @Query(value = "SELECT p.like_count FROM posts p WHERE p.id = :postId", nativeQuery = true)
+    Integer findLikeCountByIdNative(@Param("postId") Long postId);
 
     /**
      * 특정 작성자(User)가 작성한 모든 게시글의 user_id를 더미 id로 수정합니다.

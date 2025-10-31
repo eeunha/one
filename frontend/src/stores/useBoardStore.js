@@ -10,6 +10,7 @@ export const useBoardStore = defineStore('post', () => {
     // 상태 (State): ref()를 사용하여 반응성(Reactive) 상태 정의
     const posts = ref([]);           // 게시글 목록 상태 (현재 페이지의 데이터)
     const isLoading = ref(false);      // API 요청 로딩 상태 플래그
+    const isLiking = ref(false);    // 좋아요 전용 로딩 상태 플래그
 
     // 현재 게시글 (상세 페이지에서 사용)
     const currentPost = ref(null);
@@ -169,6 +170,48 @@ export const useBoardStore = defineStore('post', () => {
         }
     };
 
+    const likePost = async (postId) => {
+        if (isLiking.value) return;
+
+        isLiking.value = true;
+
+        try {
+            const responseData = await BoardService.likePost(postId);
+            console.log('게시글 좋아요 성공: ', responseData);
+
+            // like_count 업데이트
+
+            return responseData.id;
+
+        } catch (error) {
+            console.error('게시글 좋아요 실패: ', error.response ? error.response.data : error.message);
+            throw error; // View 컴포넌트가 사용자에게 알리도록 에러를 던짐
+
+        } finally {
+            isLiking.value = false;
+        }
+    };
+
+    const unlikePost = async (postId) => {
+        if (isLiking.value) return;
+
+        isLiking.value = true;
+
+        try {
+            const responseData = await unlikePost(postId);
+            console.log('게시글 좋아요 취소 성공: ', responseData);
+
+            // like_count 업데이트
+
+            return responseData.id;
+        } catch (error) {
+            console.error('게시글 좋아요 취소 실패: ', error.response ? error.response.data : error.message);
+            throw error;
+        } finally {
+            isLiking.value = false;
+        }
+    };
+
     /**
      * ⭐️ [추가] 다음 페이지로 이동할 때 토스트 메시지를 설정합니다. ⭐️
      * @param {string} message - 표시할 메시지
@@ -185,6 +228,7 @@ export const useBoardStore = defineStore('post', () => {
         transientToast.value = null;
     };
 
+
     return {
         posts,
         isLoading,
@@ -197,6 +241,8 @@ export const useBoardStore = defineStore('post', () => {
         createPost,
         updatePost,
         deletePost,
+        likePost,
+        unlikePost,
         setTransientToast,
         clearTransientToast,
     }
