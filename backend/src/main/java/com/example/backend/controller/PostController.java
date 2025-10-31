@@ -1,10 +1,8 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.LikeResponseDTO;
 import com.example.backend.dto.PostCreateRequestDTO;
 import com.example.backend.dto.PostResponseDTO;
 import com.example.backend.dto.PostUpdateRequestDTO;
-import com.example.backend.entity.Like;
 import com.example.backend.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -101,23 +99,5 @@ public class PostController {
 
         // 본문 없는 204 No Content 응답
         return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204 No Content (성공적으로 삭제)
-    }
-
-    @PostMapping("/{postId}/like")
-    public ResponseEntity<LikeResponseDTO> likePost(@PathVariable Long postId, Principal principal) {
-        Long userId = getUserIdFromPrincipal(principal);
-
-        LikeResponseDTO likeResponseDTO = postService.likePost(postId, userId);
-
-        return ResponseEntity.ok(likeResponseDTO);
-    }
-
-    @DeleteMapping("/{postId}/like")
-    public ResponseEntity<LikeResponseDTO> unlikePost(@PathVariable Long postId, Principal principal) {
-        Long userId = getUserIdFromPrincipal(principal);
-
-        LikeResponseDTO likeResponseDTO = postService.unlikePost(postId, userId);
-
-        return ResponseEntity.ok(likeResponseDTO);
     }
 }

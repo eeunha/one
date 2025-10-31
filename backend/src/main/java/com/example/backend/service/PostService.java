@@ -1,6 +1,5 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.LikeResponseDTO;
 import com.example.backend.dto.PostResponseDTO;
 import com.example.backend.entity.Post;
 import com.example.backend.entity.User;
@@ -15,8 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor // final 필드(Repository 등)를 위한 생성자 자동 생성
@@ -108,15 +105,6 @@ public class PostService {
         return latestViewCount;
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Integer incrementLikeCount(Long postId) {
-        postRepository.incrementLikeCount(postId);
-
-        Integer latestLikeCount = postRepository.findLikeCountByIdNative(postId);
-
-        return latestLikeCount;
-    }
-
     // === 게시글 수정 ===
     @Transactional
     public PostResponseDTO updatePost(Long postId, Long userId, String newTitle, String newContent) {
@@ -185,16 +173,5 @@ public class PostService {
         int updatedCount = postRepository.bulkUpdateAuthorIdToDummy(originalUserId, dummyUserId);
 
         System.out.println("PostService: 총 " + updatedCount + "개의 게시글 작성자 익명화 완료 (벌크 업데이트)");
-    }
-
-    @Transactional
-    public LikeResponseDTO likePost(Long postId, Long userId) {
-
-
-    }
-
-    @Transactional
-    public LikeResponseDTO unlikePost(Long postId, Long userId) {
-
     }
 }
