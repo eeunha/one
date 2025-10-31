@@ -1,5 +1,6 @@
 package com.example.backend.config;
 
+import com.example.backend.exception.AlreadyLikeException;
 import com.example.backend.exception.RefreshTokenExpiredException;
 import com.example.backend.exception.UserWithdrawnException;
 import jakarta.persistence.EntityNotFoundException;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.rmi.AlreadyBoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -103,7 +103,7 @@ public class GlobalExceptionHandler {
     /**
      * AlreadyLikedException 처리: 좋아요 중복 시도 등 비즈니스 충돌 발생 시 (409 Conflict)
      */
-    @ExceptionHandler(AlreadyBoundException.class)
+    @ExceptionHandler(AlreadyLikeException.class)
     public ResponseEntity<Map<String, String>> handleAlreadyLikedException(Exception e) {
         Map<String, String> errorDetails = new HashMap<>();
         errorDetails.put("error", "User Conflict");
