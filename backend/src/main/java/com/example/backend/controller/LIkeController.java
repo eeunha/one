@@ -17,11 +17,21 @@ public class LIkeController {
 
     private final LikeService likeService;
 
+    @GetMapping("/like")
+    public ResponseEntity<LikeResponseDTO> fetchLikeStatus(@PathVariable Long postId, Principal principal) {
+
+        Long userId = getUserIdFromPrincipal(principal);
+
+        LikeResponseDTO likeResponseDTO = likeService.getLikeStatus(postId, userId);
+
+        return ResponseEntity.ok(likeResponseDTO);
+    }
+
     @PostMapping("/like")
     public ResponseEntity<LikeResponseDTO> likePost(@PathVariable Long postId, Principal principal) {
         Long userId = getUserIdFromPrincipal(principal);
 
-        LikeResponseDTO likeResponseDTO = likeService.likePost(postId, userId);
+        LikeResponseDTO likeResponseDTO = likeService.addLike(postId, userId);
 
         return ResponseEntity.ok(likeResponseDTO);
     }
@@ -30,7 +40,7 @@ public class LIkeController {
     public ResponseEntity<LikeResponseDTO> unlikePost(@PathVariable Long postId, Principal principal) {
         Long userId = getUserIdFromPrincipal(principal);
 
-        LikeResponseDTO likeResponseDTO = likeService.unlikePost(postId, userId);
+        LikeResponseDTO likeResponseDTO = likeService.removeLike(postId, userId);
 
         return ResponseEntity.ok(likeResponseDTO);
     }
