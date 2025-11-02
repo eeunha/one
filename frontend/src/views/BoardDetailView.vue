@@ -6,7 +6,8 @@ import {useAuthStore} from "@/stores/useAuthStore.js";
 import {useCommentStore} from '@/stores/useCommentStore.js';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import Toast from '@/components/Toast.vue';
-import CommentList from '@/components/CommentList.vue';
+import CommentList from '@/components/comment/CommentList.vue';
+import LikeButton from '@/components/LikeButton.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -217,9 +218,14 @@ const postNotFound = computed(() => !boardStore.isLoading && !boardStore.current
         </header>
 
         <!-- 본문 내용 -->
-        <section class="min-h-[200px] text-lg text-gray-700 leading-relaxed whitespace-pre-wrap mb-10">
+        <section class="min-h-[150px] text-lg text-gray-700 leading-relaxed whitespace-pre-wrap mb-10">
           {{ boardStore.currentPost.content }}
         </section>
+
+        <!-- ⭐️ 수정: 본문 아래, 액션 버튼 위에 좋아요 버튼 추가 ⭐️ -->
+        <div class="flex justify-center mb-6 pb-2">
+          <LikeButton :post-id="postId" />
+        </div>
 
         <!-- 액션 버튼 영역 -->
         <footer class="flex justify-between border-t pt-4">

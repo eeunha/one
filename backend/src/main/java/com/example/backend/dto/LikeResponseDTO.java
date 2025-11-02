@@ -1,5 +1,7 @@
 package com.example.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,5 +21,17 @@ public class LikeResponseDTO {
     private int likeCount;
 
     // 현재 사용자의 좋아요 상태 (true: 좋아요 상태, false: 좋아요 취소 상태)
+    @JsonProperty("isLiked")
     private boolean isLiked;
+
+    /**
+     * ⭐️ 수동 게터 추가 및 @JsonIgnore 적용 ⭐️
+     * * Lombok이 생성하는 public boolean isLiked() 메서드를 오버라이드합니다.
+     * @JsonIgnore를 붙여 Jackson이 이 메서드를 통해 'liked'라는 JSON 필드를 생성하는 것을 방지합니다.
+     * 최종 JSON에는 @JsonProperty("isLiked")를 통해 'isLiked'만 남게 됩니다.
+     */
+    @JsonIgnore
+    public boolean isLiked() {
+        return this.isLiked;
+    }
 }
