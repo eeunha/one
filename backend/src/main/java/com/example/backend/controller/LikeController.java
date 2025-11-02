@@ -13,11 +13,12 @@ import static com.example.backend.util.AuthUtil.getUserIdFromPrincipal;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts/{postId}")
-public class LIkeController {
+public class LikeController {
 
     private final LikeService likeService;
 
-    @GetMapping("/like")
+    // 좋아요 상태 조회
+    @GetMapping("/like/status")
     public ResponseEntity<LikeResponseDTO> fetchLikeStatus(@PathVariable Long postId, Principal principal) {
 
         Long userId = getUserIdFromPrincipal(principal);

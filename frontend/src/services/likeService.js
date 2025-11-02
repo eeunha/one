@@ -13,7 +13,7 @@ export const LikeService = {
         console.log('LikeService - fetchLikeStatus 진입')
 
         try {
-            const response = await authenticatedClient.get(`${LIKE_API_BASE_URL}/${postId}/like`);
+            const response = await authenticatedClient.get(`${LIKE_API_BASE_URL}/${postId}/like/status`);
             return response.data;
         } catch (error) {
             console.error('Failed to fetch like status: ', error)
