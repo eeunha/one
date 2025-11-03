@@ -1,15 +1,30 @@
 import {defineStore} from 'pinia';
-import {ref} from 'vue';
+import {computed, ref} from 'vue';
 import {LikeService} from '@/services/likeService.js';
+import {useBoardStore} from '@/stores/useBoardStore.js';
 
 export const useLikeStore = defineStore('like', () => {
 
-    const likeCount = ref(0);
-    const isLiked = ref(false);
+    const isLikedByUser = ref(false);
     const isLoading = ref(false);
 
-    const fetchLikeStatus = async (postId) => {
+    // isLikedByUser를 위한 Getter (optional, ref를 직접 써도 무방)
+    const isLiked = computed(() => isLikedByUser.value);
+
+    /**
+     * 좋아요 상태를 초기 로드하고 Store를 업데이트합니다.
+     * @param {number} postId - 현재 게시글 ID
+     * @param {boolean} isAuthenticated - 현재 로그인 상태 여부 (LikeButton.vue에서 전달) ⭐️
+     */
+    const fetchLikeStatus = async (postId, isAuthenticated) => {
         if (isLoading.value) return;
+
+        // ⭐️ 핵심 수정: 비로그인 상태이면 API 호출을 건너뜁니다. ⭐️
+        if (!isAuthenticated) {
+            isLikedByUser.value = false;
+            console.log("Like Store: 비로그인 상태이므로 사용자 좋아요 상태를 확인하지 않습니다.");
+            return;
+        }
 
         isLoading.value = true;
 
@@ -18,75 +33,59 @@ export const useLikeStore = defineStore('like', () => {
             const responseData = await LikeService.fetchLikeStatus(postId);
 
             // 2. 성공적으로 데이터를 받았을 경우 상태 반영
-            likeCount.value = responseData.likeCount;
-            isLiked.value = responseData.isLiked; // 로그인된 사용자라면 정확한 isLiked 값을 가짐
+            isLikedByUser.value = responseData.isLiked; // 로그인된 사용자라면 정확한 isLiked 값을 가짐
 
             console.log("Like Store: 좋아요 데이터 로드 완료");
             
         } catch (error) {
-            console.error("Like Store: 좋아요 데이터 로드 실패. 비로그인 상태이거나 게시글을 찾을 수 없음.", error);
+            console.error("Like Store: 좋아요 상태 로드 실패. 401/403 등 인증 문제일 수 있음.", error);
+            isLikedByUser.value = false; // 좋아요 상태는 무조건 false로 표시
 
-            // 3. 🚨 에러 발생 시 방어 로직 🚨
-            // 서버가 401(Unauthorized) 또는 404를 반환했을 경우,
-            // 좋아요 기능은 작동 불가이므로 안전하게 초기화합니다.
-            likeCount.value = 0; // 카운트는 0 (혹은 기본값)
-            isLiked.value = false; // 좋아요 상태는 무조건 false로 표시
-
-            throw error; // 에러는 컴포넌트로 전달하여 토스트 등으로 알릴 수 있음
+            // throw error; // 에러는 컴포넌트로 전달하여 토스트 등으로 알릴 수 있음
         } finally {
             isLoading.value = false;
         }
     };
 
-    const likePost = async (postId) => {
+    /**
+     * 좋아요/취소 액션의 공통 로직을 처리하고 Board Store의 likeCount를 업데이트합니다.
+     * @param {number} postId
+     * @param {Promise<Object>} apiCallPromise - LikeService.likePost 또는 LikeService.unlikePost의 Promise
+     */
+    const handleLikeAction = async (postId, apiCallPromise) => {
         if (isLoading.value) return;
 
         isLoading.value = true;
 
+        const boardStore = useBoardStore();
+
         try {
-            const responseData = await LikeService.likePost(postId);
-            console.log('게시글 좋아요 성공: ', responseData);
+            const responseData = await apiCallPromise;
 
-            likeCount.value = responseData.likeCount;
-            isLiked.value = responseData.isLiked;
+            // 1. [Like Store] 개인 좋아요 상태 업데이트
+            isLikedByUser.value = responseData.isLiked;
 
+            // 2. [Board Store] 좋아요 수 업데이트 (실시간 반영) ⭐️ 핵심 동기화 ⭐️
+            boardStore.updateLikeCount(postId, responseData.likeCount);
+
+            console.log('게시글 좋아요/취소 성공 및 상태 동기화 완료');
             return responseData;
 
         } catch (error) {
-            console.error('게시글 좋아요 실패: ', error.response ? error.response.data : error.message);
-            throw error; // View 컴포넌트가 사용자에게 알리도록 에러를 던짐
-
-        } finally {
-            isLoading.value = false;
-        }
-    };
-
-    const unlikePost = async (postId) => {
-        if (isLoading.value) return;
-
-        isLoading.value = true;
-
-        try {
-            const responseData = await LikeService.unlikePost(postId);
-            console.log('게시글 좋아요 취소 성공: ', responseData);
-
-            likeCount.value = responseData.likeCount;
-            isLiked.value = responseData.isLiked;
-
-            return responseData;
-
-        } catch (error) {
-            console.error('게시글 좋아요 취소 실패: ', error.response ? error.response.data : error.message);
+            console.error('게시글 좋아요/취소 실패: ', error.response ? error.response.data : error.message);
             throw error;
-
         } finally {
             isLoading.value = false;
         }
-    };
+    }
+
+    const likePost = (postId) => handleLikeAction(postId, LikeService.likePost(postId));
+
+    const unlikePost = (postId) => handleLikeAction(postId, LikeService.unlikePost(postId));
 
     return {
-        likeCount,
         isLiked,
+        isLikedByUser,
         isLoading,
         fetchLikeStatus,
         likePost,

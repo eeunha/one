@@ -1,9 +1,13 @@
 <script setup>
-import {onMounted} from 'vue';
+import {computed, onMounted} from 'vue';
 import {useLikeStore} from '@/stores/useLikeStore.js';
+import {useAuthStore} from '@/stores/useAuthStore.js';
+import {useBoardStore} from '@/stores/useBoardStore.js';
 
 // Pinia Store 인스턴스
+const boardStore = useBoardStore();
 const likeStore = useLikeStore();
+const authStore = useAuthStore();
 
 // 부모 컴포넌트로부터 postId를 props로 수신
 const props = defineProps({
@@ -13,21 +17,38 @@ const props = defineProps({
   },
 });
 
+// ⭐️ 수정: 좋아요 상태는 LikeStore의 isLiked Getter를 사용합니다. ⭐️
+const isLiked = computed(() => likeStore.isLiked);
+
 // 컴포넌트 마운트 시, 해당 게시글의 좋아요 상태와 카운트를 로드하여 Store에 설정
 // 이 정보는 로그인된 사용자 기준의 '좋아요 여부'와 '총 좋아요 수'입니다.
 onMounted(async () => {
   if (props.postId) {
     // Store 액션을 호출하여 초기 데이터 로드
-    await likeStore.fetchLikeStatus(props.postId);
+
+    await likeStore.fetchLikeStatus(props.postId, authStore.isAuthenticated);
   }
 });
 
+// ⭐️ 수정: 좋아요 수는 BoardStore의 Getter를 통해 가져옵니다. ⭐️
+const displayLikeCount = computed(() => {
+  return boardStore.currentPostLikeCount;
+})
+
 // 좋아요 상태 토글 함수
 const toggleLike = async () => {
+
+  // 로그인 하지 않은 경우 경고
+  if (!authStore.isAuthenticated) {
+    // ❌ alert() 사용 금지. 대신 console.warn 또는 커스텀 모달/토스트 사용
+    console.warn('로그인 후 좋아요를 누를 수 있습니다.')
+    return;
+  }
+
   // 유효하지 않은 ID거나 로딩 중이면 실행하지 않음
   if (!props.postId || likeStore.isLoading) return;
 
-  if (likeStore.isLiked) {
+  if (isLiked.value) {
     // 현재 좋아요 상태: 취소 요청 (DELETE)
     await likeStore.unlikePost(props.postId);
   } else {
@@ -42,10 +63,10 @@ const toggleLike = async () => {
     <!-- 좋아요 버튼 -->
     <button
       @click="toggleLike"
-      :disabled="likeStore.isLoading"
+      :disabled="likeStore.isLoading || !authStore.isAuthenticated"
       :class="[
           'flex items-center space-x-1 p-2 rounded-full transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:opacity-50',
-          likeStore.isLiked
+          isLiked
             ? 'text-red-500 hover:bg-red-50 focus:ring-red-500' // 좋아요 상태 (빨간색)
             : 'text-gray-400 hover:text-red-500 hover:bg-red-50 focus:ring-gray-300' // 취소 상태(회색)
       ]"
@@ -67,9 +88,10 @@ const toggleLike = async () => {
 
     <!-- 좋아요 수 -->
     <span class="text-xl font-bold text-gray-800 tabular-nums">
-      {{ likeStore.likeCount }}
+      {{ displayLikeCount }}
     </span>
   </div>
+
 </template>
 
 <style scoped>
