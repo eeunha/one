@@ -26,6 +26,8 @@ public class LikeService {
     @Transactional(readOnly = true)
     public LikeResponseDTO getLikeStatus(Long postId, Long userId) {
 
+        System.out.println("LikeService - getLikeStatus 진입");
+
         // 게시글 존재 확인 (404 Not Found 예외 처리)
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시글(Post ID: " + postId + ")를 찾을 수 없습니다."));
@@ -45,6 +47,8 @@ public class LikeService {
 
     @Transactional
     public LikeResponseDTO addLike(Long postId, Long userId) {
+
+        System.out.println("LikeService - addLike 진입");
 
         // 1. 게시글 존재 확인 (404 Not Found 예외 처리)
         Post post = postRepository.findById(postId)
@@ -85,6 +89,8 @@ public class LikeService {
     @Transactional
     public LikeResponseDTO removeLike(Long postId, Long userId) {
 
+        System.out.println("LikeService - removeLike 진입");
+
         // 1. 게시글 존재 확인 (404 Not Found 예외 처리)
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시글(Post ID: " + postId + ")를 찾을 수 없습니다."));
@@ -115,6 +121,9 @@ public class LikeService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Integer updateLikeCountIncrement(Long postId) {
+
+        System.out.println("LikeService - updateLikeCountIncrement 진입");
+
         postRepository.incrementLikeCount(postId);
         // Native Query로 DB에서 최신 카운트만 가져와 반환
         return postRepository.findLikeCountByIdNative(postId);
@@ -128,6 +137,9 @@ public class LikeService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Integer updateLikeCountDecrement(Long postId) {
+
+        System.out.println("LikeService - updateLikeCountDecrement 진입");
+
         postRepository.decrementLikeCount(postId);
         // Native Query로 DB에서 최신 카운트만 가져와 반환
         return postRepository.findLikeCountByIdNative(postId);
