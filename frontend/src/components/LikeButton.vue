@@ -17,6 +17,15 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['open-like-modal']);
+
+const openWithdrawalModal = () => {
+  // 부모 컴포넌트(Profile.vue)에게 모달을 열어달라고 요청
+  console.log('openWithdrawalModal');
+
+  emit('open-like-modal');
+};
+
 // ⭐️ 수정: 좋아요 상태는 LikeStore의 isLiked Getter를 사용합니다. ⭐️
 const isLiked = computed(() => likeStore.isLiked);
 
@@ -24,8 +33,8 @@ const isLiked = computed(() => likeStore.isLiked);
 // 이 정보는 로그인된 사용자 기준의 '좋아요 여부'와 '총 좋아요 수'입니다.
 onMounted(async () => {
   if (props.postId) {
-    // Store 액션을 호출하여 초기 데이터 로드
 
+    // Store 액션을 호출하여 초기 데이터 로드
     await likeStore.fetchLikeStatus(props.postId, authStore.isAuthenticated);
   }
 });
@@ -37,11 +46,15 @@ const displayLikeCount = computed(() => {
 
 // 좋아요 상태 토글 함수
 const toggleLike = async () => {
+  console.log('toggleLike');
 
   // 로그인 하지 않은 경우 경고
   if (!authStore.isAuthenticated) {
     // ❌ alert() 사용 금지. 대신 console.warn 또는 커스텀 모달/토스트 사용
     console.warn('로그인 후 좋아요를 누를 수 있습니다.')
+
+    openWithdrawalModal();
+
     return;
   }
 
@@ -63,7 +76,7 @@ const toggleLike = async () => {
     <!-- 좋아요 버튼 -->
     <button
       @click="toggleLike"
-      :disabled="likeStore.isLoading || !authStore.isAuthenticated"
+      :disabled="likeStore.isLoading"
       :class="[
           'flex items-center space-x-1 p-2 rounded-full transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:opacity-50',
           isLiked
@@ -91,7 +104,6 @@ const toggleLike = async () => {
       {{ displayLikeCount }}
     </span>
   </div>
-
 </template>
 
 <style scoped>
