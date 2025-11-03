@@ -36,34 +36,31 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name = "user_id", nullable = false) // DB의 FK 컬럼 이름인 "user_id"를 명시적으로 지정
     private User author; // 작성자 User 객체
 
+    @Builder.Default
     @Column(name = "view_count", nullable = false)
     private int viewCount = 0;
 
+    @Builder.Default
+    @Column(name = "like_count", nullable = false)
+    private int likeCount = 0;
+
     // === 비즈니스 로직 편의 메서드 ===
+
+    // ✨ Likes와의 일대다(OneToMany) 관계 추가
+    // mappedBy = "post" : Like 엔티티의 'post' 필드에 의해 매핑되었음을 알림 (연관 관계의 주인이 아님)
+    // orphanRemoval = true : 컬렉션(likes)에서 특정 Like 객체를 제거했을 때 해당 Like 객체를 자동으로 물리 삭제하는 기능
+    @Builder.Default
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
+    private List<Like> likes = new ArrayList<>();
 
     // --- 댓글 (Comment) 매핑 (소프트 삭제를 위해 cascade 설정 없음) ---
     // Comment의 post 필드에 의해 매핑됨
+    @Builder.Default
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
     public void updatePost(String title, String content) {
         this.title = title;
         this.content = content;
-    }
-
-    // ⭐️ author 필드를 수정할 수 있는 비즈니스 메서드 추가
-    public void setAuthorIdToDummy(User dummyUser) {
-        this.author = dummyUser;
-        // @LastModifiedDate에 의해 updated_at이 자동 갱신됩니다.
-    }
-
-    /**
-     * Post 객체 생성 시 필수 정보를 설정하는 생성자
-     */
-    public Post(String title, String content, User author) {
-        this.title = title;
-        this.content = content;
-        this.author = author;
-        this.viewCount = 0;
     }
 }

@@ -24,7 +24,7 @@ public class User extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable=false, unique=true)
+    @Column(nullable=false)
     private String email;
 
     private String password;
@@ -32,6 +32,7 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 100)
     private String name;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role = Role.ROLE_USER;
@@ -49,20 +50,18 @@ public class User extends BaseTimeEntity {
     private String snsId;
 
     // Post의 author 필드에 의해 매핑됨
+    @Builder.Default // 빌더 패턴 사용 시 초기화 보장
     @OneToMany(mappedBy = "author")
     private List<Post> posts = new ArrayList<>();
 
     // Comment의 author 필드에 의해 매핑됨
+    @Builder.Default // 빌더 패턴 사용 시 초기화 보장
     @OneToMany(mappedBy = "author")
     private List<Comment> comments = new ArrayList<>();
 
-    // 비밀번호 기반 사용자 생성자 (필수 필드)
-    public User(String email, String password, String name) {
-        this.email = email;
-        this.password = password; // 실제로는 암호화된 비밀번호가 전달되어야 함
-        this.name = name;
-        this.role = Role.ROLE_USER;
-    }
+    @Builder.Default
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    private List<Like> likes = new ArrayList<>();
 
     // 소셜 사용자 업데이트 메서드 (토큰 업데이트 등)
     public void updateRefreshToken(String token, LocalDateTime expiry) {

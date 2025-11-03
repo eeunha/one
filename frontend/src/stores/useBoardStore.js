@@ -28,7 +28,27 @@ export const useBoardStore = defineStore('post', () => {
     // Getter (컴퓨팅된 상태)
     const postCount = computed(() => pagination.value.totalElements);
 
+    // ⭐️ 좋아요 수 Getter 추가 (currentPost가 null일 때 0 반환) ⭐️
+    const currentPostLikeCount = computed(() => {
+        return currentPost.value ? currentPost.value.likeCount : 0;
+    })
+
     // Actions
+
+    /**
+     * ⭐️ 새로 추가된 액션: 좋아요 수를 업데이트합니다. ⭐️
+     * useLikeStore에서 좋아요/취소 요청 후 호출됩니다.
+     * @param {number} postId - 업데이트할 게시글 ID
+     * @param {number} newLikeCount - 서버에서 받은 최신 좋아요 수
+     */
+    const updateLikeCount = (postId, newLikeCount) => {
+        // 1. 현재 상세 페이지에 표시된 게시글이 맞는지 확인
+        if (currentPost.value && currentPost.value.id === postId) {
+            console.log(`Board Store: Post ID ${postId}의 좋아요 수를 ${newLikeCount}로 업데이트합니다.`);
+            // Pinia의 반응성을 이용해 직접 필드 업데이트 -> LikeButton.vue에 실시간 반영
+            currentPost.value.likeCount = newLikeCount;
+        }
+    }
 
     /**
      * BoardService를 통해 서버에서 게시글 목록을 가져옵니다.
@@ -192,6 +212,8 @@ export const useBoardStore = defineStore('post', () => {
         pagination,
         transientToast,
         postCount,
+        currentPostLikeCount,
+        updateLikeCount,
         fetchPosts,
         fetchPostDetail,
         createPost,

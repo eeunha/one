@@ -1,5 +1,6 @@
 package com.example.backend.config;
 
+import com.example.backend.exception.AlreadyLikeException;
 import com.example.backend.exception.RefreshTokenExpiredException;
 import com.example.backend.exception.UserWithdrawnException;
 import jakarta.persistence.EntityNotFoundException;
@@ -82,7 +83,9 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
-    // ⭐️ UserWithdrawnException 처리: 탈퇴 회원 재로그인 시도 - 403 Forbidden ⭐️
+    /**
+     * UserWithdrawnException 처리: 탈퇴 회원 재로그인 시도 - 403 Forbidden
+     */
     @ExceptionHandler(UserWithdrawnException.class)
     public ResponseEntity<Map<String, String>> handleUserWithdrawnException(UserWithdrawnException e) {
         Map<String, String> errorDetails = new HashMap<>();
@@ -95,5 +98,17 @@ public class GlobalExceptionHandler {
 
         // 403 Forbidden (계정 상태 문제로 인한 접근 금지) 상태 반환
         return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
+    }
+
+    /**
+     * AlreadyLikedException 처리: 좋아요 중복 시도 등 비즈니스 충돌 발생 시 (409 Conflict)
+     */
+    @ExceptionHandler(AlreadyLikeException.class)
+    public ResponseEntity<Map<String, String>> handleAlreadyLikedException(Exception e) {
+        Map<String, String> errorDetails = new HashMap<>();
+        errorDetails.put("error", "User Conflict");
+        errorDetails.put("message", e.getMessage() != null ? e.getMessage() : "이미 처리된 요청입니다.");
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
     }
 }

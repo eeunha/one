@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
+import static com.example.backend.util.AuthUtil.getUserIdFromPrincipal;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts")
@@ -24,19 +26,10 @@ public class PostController {
 
     private final PostService postService;
 
-    // JWT/OAuth2 인증 구현 후, Principal 객체에서 Long 형태의 사용자 ID를 추출하는 헬퍼 메서드
-    private Long getUserIdFromPrincipal(Principal principal) {
-        if (principal == null) {
-            // 인증되지 않은 경우 임시 사용자 ID 반환 (실제 환경에서는 인증 예외를 던져야 함)
-            return 1L;
-        }
-        return Long.valueOf(principal.getName());
-    }
-
     // === 1. 게시글 생성 (POST /api/posts) ===
     @PostMapping
     public ResponseEntity<PostResponseDTO> createPost(@Valid @RequestBody PostCreateRequestDTO request,
-                                           Principal principal) {
+                                                      Principal principal) {
 
         Long userId = getUserIdFromPrincipal(principal);
 

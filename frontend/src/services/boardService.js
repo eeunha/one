@@ -86,5 +86,5 @@ export const BoardService = {
             console.error('Failed to delete post: ', error);
             throw error;
         }
-    }
+    },
 }

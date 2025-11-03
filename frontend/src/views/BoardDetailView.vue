@@ -6,7 +6,8 @@ import {useAuthStore} from "@/stores/useAuthStore.js";
 import {useCommentStore} from '@/stores/useCommentStore.js';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import Toast from '@/components/Toast.vue';
-import CommentList from '@/components/CommentList.vue';
+import CommentList from '@/components/comment/CommentList.vue';
+import LikeButton from '@/components/LikeButton.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -26,6 +27,13 @@ const postDeleteError = ref('');
 const isCommentDeleteModalOpen = ref(false);
 const commentToDeleteId = ref(null); // 삭제할 댓글 ID 저장
 const commentDeleteError = ref(''); // 댓글 삭제 에러 메시지
+
+// 1. 좋아요 모달 상태
+const showLikeModal = ref(false);
+// 2. 좋아요 모달 처리 중 로딩 상태 (모달의 isLoading props에 전달)
+const isProcessing = ref(false);
+// 3. 좋아요 에러 메시지 (모달의 error props에 전달)
+const likeError = ref('');
 
 // 로컬 토스트 상태
 const isToastVisible = ref(false);
@@ -175,6 +183,29 @@ const formatDate = (dateString) => {
 // 게시글 로드 완료 후 데이터가 없는지 확인하는 Computed 속성
 const postNotFound = computed(() => !boardStore.isLoading && !boardStore.currentPost);
 
+const handleLikeConfirm = async () => {
+
+  console.log('handleLikeConfirm');
+
+  isProcessing.value = true;
+  likeError.value = '';
+
+  try {
+    showLikeModal.value = false;
+    await router.push({ name: 'Login' });
+
+  } catch (error) {
+    console.error('로그인 페이지 이동 실패: ', error);
+    isProcessing.value = false;
+
+    // 사용자에게 이동 실패를 알립니다.
+    likeError.value = '로그인 페이지로 이동 중 오류가 발생했습니다.';
+    showToast(likeError.value, error);
+
+    // 실패했으므로 모달은 닫지 않고 에러 메시지 유지
+  }
+};
+
 </script>
 
 <template>
@@ -217,9 +248,17 @@ const postNotFound = computed(() => !boardStore.isLoading && !boardStore.current
         </header>
 
         <!-- 본문 내용 -->
-        <section class="min-h-[200px] text-lg text-gray-700 leading-relaxed whitespace-pre-wrap mb-10">
+        <section class="min-h-[150px] text-lg text-gray-700 leading-relaxed whitespace-pre-wrap mb-10">
           {{ boardStore.currentPost.content }}
         </section>
+
+        <!-- ⭐️ 수정: 본문 아래, 액션 버튼 위에 좋아요 버튼 추가 ⭐️ -->
+        <div class="flex justify-center mb-6 pb-2">
+          <LikeButton
+              :post-id="postId"
+              @open-like-modal="showLikeModal = true"
+          />
+        </div>
 
         <!-- 액션 버튼 영역 -->
         <footer class="flex justify-between border-t pt-4">
@@ -287,4 +326,17 @@ const postNotFound = computed(() => !boardStore.isLoading && !boardStore.current
         @update:show="isToastVisible = $event"
     />
   </div>
+
+  <ConfirmationModal
+      :show="showLikeModal"
+      @update:show="showLikeModal = $event"
+      @confirm="handleLikeConfirm"
+
+      title="경고: 로그인 필요"
+      message="좋아요를 누르려면 로그인이 필요합니다."
+      :is-loading="isProcessing"
+      :error="likeError"
+      confirm-button-text="로그인하기"
+      confirm-button-class="bg-red-600 hover:bg-red-700"
+  />
 </template>
