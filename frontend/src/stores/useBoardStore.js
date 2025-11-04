@@ -71,6 +71,8 @@ export const useBoardStore = defineStore('post', () => {
             // ⭐ FIX 3: API 응답이 전체 Page 객체라고 가정하고 상태 업데이트 ⭐
             posts.value = responseData.content;
 
+            console.log("posts: ", posts.value);
+
             // 페이지네이션 정보 업데이트
             pagination.value = {
                 currentPage: responseData.pageable.pageNumber + 1,

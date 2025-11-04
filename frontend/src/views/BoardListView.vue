@@ -172,9 +172,19 @@ const getSequentialNumber = (index) => {
             </p>
           </div>
 
+          <!-- ⭐️ [수정] 3. Middle Column: Comment Count (댓글 수) - 게시글과 우측 정보 사이 ⭐️ -->
+          <div class="hidden sm:flex w-15 flex-shrink-0 flex-col items-center justify-center text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z" />
+            </svg>
+            <span class="text-md font-semibold" :class="{'text-blue-600': post.commentCount > 0, 'text-gray-400': post.commentCount === 0}">
+                {{ post.commentCount || 0 }}
+            </span>
+          </div>
+
           <!-- 3. Right Column: Date, Author, Views (날짜, 작성자, 조회수) -->
           <!-- ⭐️ [수정] sm 사이즈(640px) 미만에서는 hidden으로 숨기고, sm 사이즈부터 다시 flex로 보이도록 설정 ⭐️ -->
-          <div class="hidden sm:flex w-40 flex-shrink-0 flex-col items-end text-right text-gray-500 space-y-1">
+          <div class="hidden sm:flex w-30 flex-shrink-0 flex-col items-end text-right text-gray-500 space-y-1">
             <!-- 1. 작성일 (날짜) -->
             <span class="font-medium text-sm text-gray-600">
               {{ formatDate(post.createdAt) }}
