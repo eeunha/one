@@ -10,10 +10,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor // final 필드(Repository 등)를 위한 생성자 자동 생성
@@ -62,6 +65,21 @@ public class PostService {
         // DTO 변환 로직을 서비스에서 처리하여 Controller의 역할을 줄입니다.
         return postPage.map(PostResponseDTO::new);
     }
+
+    public List<PostResponseDTO> getTop8PostsForMain() {
+
+        // 1. Pageable 객체 생성: 0페이지에서 8개(limit 8)만 가져오도록 설정
+        // 이 Pageable이 DB 쿼리에 LIMIT 8을 적용시킵니다.
+        Pageable topN = PageRequest.of(0, 8);
+
+        // 2. Repository 호출 (Page<DTO> 반환)
+        Page<PostResponseDTO> pageResult = postRepository.findTopNByLikeCount(topN);
+
+        // 3. Page 객체에서 실제 게시글 목록(List<DTO>)만 추출하여 반환
+        // DTO 변환 로직을 서비스에서 처리하여 Controller의 역할을 줄입니다.
+        return pageResult.getContent();
+    }
+
 
     /**
      * 3. 게시글 상세 조회 (Read - Single)

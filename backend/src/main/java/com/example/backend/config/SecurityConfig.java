@@ -50,7 +50,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/refresh",
                                 "/auth/google/login",
-                                "/posts"
+                                "/posts",
+                                "/posts/popular"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/posts/{postId}").permitAll()
 

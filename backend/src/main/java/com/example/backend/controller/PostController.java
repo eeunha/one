@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.dto.PostCreateRequestDTO;
 import com.example.backend.dto.PostResponseDTO;
 import com.example.backend.dto.PostUpdateRequestDTO;
+import com.example.backend.entity.Post;
 import com.example.backend.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 import static com.example.backend.util.AuthUtil.getUserIdFromPrincipal;
 
@@ -25,6 +27,14 @@ import static com.example.backend.util.AuthUtil.getUserIdFromPrincipal;
 public class PostController {
 
     private final PostService postService;
+
+    @GetMapping("/popular")
+    public ResponseEntity<List<PostResponseDTO>> getTop8PostsForMain() {
+
+        List<PostResponseDTO> response = postService.getTop8PostsForMain();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     // === 1. 게시글 생성 (POST /api/posts) ===
     @PostMapping
