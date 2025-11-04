@@ -1,4 +1,5 @@
 <script setup>
+import TopPostList from '@/components/TopPostList.vue';
 </script>
 
 <template>
@@ -14,11 +15,9 @@
       </p>
     </section>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-indigo-100 p-4 rounded-lg">게시물 요약 1</div>
-      <div class="bg-indigo-100 p-4 rounded-lg">게시물 요약 2</div>
-      <div class="bg-indigo-100 p-4 rounded-lg">게시물 요약 3</div>
-    </div>
+    <section>
+      <TopPostList />
+    </section>
 
   </div>
 </template>
