@@ -35,7 +35,7 @@ onMounted(async () => {
 
       // 4. 프로필 페이지로 이동하면서 받은 데이터를 라우터의 state로 전달
       // 이렇게 하면 Profile.vue가 API를 다시 호출할 필요가 없습니다.
-      router.push('/board');
+      router.push({ name: "Home"});
 
     } catch (err) {
       console.error("로그인 중 오류가 발생했습니다:", err);
