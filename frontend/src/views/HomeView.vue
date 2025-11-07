@@ -1,5 +1,5 @@
 <script setup>
-import TopPostList from '@/components/TopPostList.vue';
+import TopPostList from '@/components/top/TopPostList.vue';
 </script>
 
 <template>

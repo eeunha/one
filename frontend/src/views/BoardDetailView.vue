@@ -7,7 +7,7 @@ import {useCommentStore} from '@/stores/useCommentStore.js';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import Toast from '@/components/Toast.vue';
 import CommentList from '@/components/comment/CommentList.vue';
-import LikeButton from '@/components/LikeButton.vue';
+import LikeButton from '@/components/button/LikeButton.vue';
 
 const route = useRoute();
 const router = useRouter();

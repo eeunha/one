@@ -2,7 +2,7 @@
 import {onMounted} from 'vue';
 import {useBoardStore} from '@/stores/useBoardStore.js';
 import {storeToRefs} from 'pinia';
-import TopPostItem from '@/components/TopPostItem.vue';
+import TopPostItem from '@/components/top/TopPostItem.vue';
 
 // Store 가져오기
 const boardStore = useBoardStore();
