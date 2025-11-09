@@ -38,13 +38,13 @@ const truncate = (text, length) => {
 
         <div class="flex space-x-3">
           <span class="flex items-center">
-            <font-awesome-icon :icon="['fas', 'heart']" class="mr-1 text-red-500" /> {{ post.likeCount }}
+            <font-awesome-icon :icon="['fas', 'heart']" class="mr-1 text-red-400" /> {{ post.likeCount }}
           </span>
           <span class="flex items-center">
-            <font-awesome-icon :icon="['fas', 'comment']" class="mr-1 text-blue-500" /> {{ post.commentCount }}
+            <font-awesome-icon :icon="['fas', 'comment']" class="mr-1 text-blue-400" /> {{ post.commentCount }}
           </span>
           <span class="flex items-center">
-            <font-awesome-icon :icon="['fas', 'eye']" class="mr-1 text-green-500" /> {{ post.viewCount }}
+            <font-awesome-icon :icon="['fas', 'eye']" class="mr-1 text-emerald-400" /> {{ post.viewCount }}
           </span>
         </div>
 

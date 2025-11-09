@@ -17,9 +17,9 @@ import Navbar from '@/components/Navbar.vue'
       <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center w-full">
 
         <!-- 로고/제목 -->
-        <RouterLink to="/" class="flex items-center space-x-2 text-3xl font-extrabold text-indigo-700 hover:text-indigo-900 transition duration-300">
+        <RouterLink to="/" class="flex items-center space-x-2 text-3xl font-extrabold text-emerald-600 hover:text-emerald-800 transition duration-300">
           <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          <span class="hidden sm:inline">JWT Board</span>
+          <span class="hidden sm:inline">Routinote</span>
         </RouterLink>
 
         <!-- Navbar 컴포넌트 -->

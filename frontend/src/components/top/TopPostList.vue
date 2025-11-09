@@ -27,15 +27,13 @@ const goToBoard = () => {
     <!-- 제목 및 더보기 버튼 섹션: Flexbox로 양쪽 정렬 -->
     <div class="flex items-center justify-between mb-4 border-b-2 border-gray-500 pb-2">
       <!-- 제목 -->
-      <h2 class="text-2xl font-bold text-gray-800">
-        🔥 인기 게시글
-      </h2>
+      <h2 class="text-3xl font-bold text-gray-800 pb-2">🔥 인기 게시글 Top 8</h2>
 
       <!-- 더보기 링크 -->
       <a
           @click.prevent="goToBoard"
           href="/board"
-          class="text-sm text-indigo-600 hover:text-indigo-800 transition duration-150 ease-in-out
+          class="text-sm text-emerald-600 hover:text-emerald-800 transition duration-150 ease-in-out
                font-medium cursor-pointer"
       >
         더보기 &rarr;

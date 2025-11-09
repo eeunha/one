@@ -14,9 +14,9 @@ const { user } = storeToRefs(authStore);
 const isLoggedIn = computed(() => !!user.value);
 
 // 3. Tailwind CSS 클래스 정의 (반복되는 스타일을 상수로 관리)
-const baseClasses = 'transition duration-150 p-2 rounded-md flex items-center whitespace-nowrap';
-const inactiveClasses = 'text-gray-600 hover:text-indigo-600';
-const activeClasses = 'font-bold text-indigo-600 bg-indigo-50';
+const baseClasses = 'nav-link transition duration-150 p-2 rounded-md flex items-center whitespace-nowrap';
+const inactiveClasses = 'text-gray-600 hover:text-emerald-600';
+const activeClasses = 'font-bold text-emerald-600 bg-emerald-50';
 
 /**
  * 게시판 메뉴의 활성 상태를 수동으로 계산하는 함수를 정의합니다.
