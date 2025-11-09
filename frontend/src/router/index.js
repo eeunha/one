@@ -31,7 +31,7 @@ const routes = [
     props: true
   }, // URL 파라미터를 props로 전달
   {
-    path: '/board/write',
+    path: '/write',
     name: 'BoardWrite',
     component: BoardWriteView,
     meta: {requiresAuth: true} // 인증 필수
