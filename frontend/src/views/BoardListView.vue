@@ -138,7 +138,7 @@ const getSequentialNumber = (index) => {
 
     <!-- 로딩 상태 -->
     <div v-if="boardStore.isLoading" class="flex justify-center items-center h-48">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
       <p class="ml-4 text-lg text-gray-600">게시글을 불러오는 중...</p>
     </div>
 
@@ -149,12 +149,12 @@ const getSequentialNumber = (index) => {
             v-for="(post, index) in boardStore.posts"
             :key="post.id"
             @click="goToDetail(post.id)"
-            class="bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition duration-300 cursor-pointer border-l-4 border-blue-500 hover:border-blue-700 flex items-center"
+            class="bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition duration-300 cursor-pointer border-l-4 border-emerald-500 hover:border-emerald-700 flex items-center"
         >
 
           <!-- 1. Left Column: Number (글번호) -->
           <div class="w-16 flex-shrink-0 text-center text-gray-500">
-            <span class="text-lg font-bold text-blue-600">
+            <span class="text-lg font-bold text-emerald-600">
               {{ getSequentialNumber(index) }}
             </span>
           </div>
@@ -174,10 +174,10 @@ const getSequentialNumber = (index) => {
 
           <!-- ⭐️ [수정] 3. Middle Column: Comment Count (댓글 수) - 게시글과 우측 정보 사이 ⭐️ -->
           <div class="hidden sm:flex w-15 flex-shrink-0 flex-col items-center justify-center text-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z" />
             </svg>
-            <span class="text-md font-semibold" :class="{'text-blue-600': post.commentCount > 0, 'text-gray-400': post.commentCount === 0}">
+            <span class="text-md font-semibold" :class="{'text-gray-600': post.commentCount > 0, 'text-gray-400': post.commentCount === 0}">
                 {{ post.commentCount || 0 }}
             </span>
           </div>
