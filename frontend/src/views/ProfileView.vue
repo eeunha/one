@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/useAuthStore.js';
 import { storeToRefs } from 'pinia'; // storeToRefs import
 
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
-import WithdrawButton from '@/components/WithdrawButton.vue';
+import WithdrawButton from '@/components/button/WithdrawButton.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();

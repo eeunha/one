@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/useAuthStore.js';
 
 import HomeView from '../views/HomeView.vue';
-import TestView from '../views/TestView.vue';
 import LoginView from "@/views/LoginView.vue";
 import ProfileView from "@/views/ProfileView.vue";
 import OAuth2RedirectHandler from "@/views/OAuth2RedirectHandler.vue";
@@ -14,7 +13,6 @@ import BoardUpdateView from '@/views/BoardUpdateView.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
-  { path: '/test', name: 'Test', component: TestView },
   { path: '/login', name: 'Login', component: LoginView },
   {
     path: '/profile',
@@ -33,7 +31,7 @@ const routes = [
     props: true
   }, // URL 파라미터를 props로 전달
   {
-    path: '/board/write',
+    path: '/write',
     name: 'BoardWrite',
     component: BoardWriteView,
     meta: {requiresAuth: true} // 인증 필수

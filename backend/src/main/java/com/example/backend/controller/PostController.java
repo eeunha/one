@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 import static com.example.backend.util.AuthUtil.getUserIdFromPrincipal;
 
@@ -25,6 +26,14 @@ import static com.example.backend.util.AuthUtil.getUserIdFromPrincipal;
 public class PostController {
 
     private final PostService postService;
+
+    @GetMapping("/popular")
+    public ResponseEntity<List<PostResponseDTO>> getTop4PostsForMain() {
+
+        List<PostResponseDTO> response = postService.getTop4PostsForMain();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     // === 1. 게시글 생성 (POST /api/posts) ===
     @PostMapping

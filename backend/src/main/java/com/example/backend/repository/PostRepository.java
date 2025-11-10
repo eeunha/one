@@ -1,6 +1,9 @@
 package com.example.backend.repository;
 
+import com.example.backend.dto.PostResponseDTO;
 import com.example.backend.entity.Post;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +18,21 @@ import java.util.Optional;
  */
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
+
+    @Query(value = """
+        SELECT NEW com.example.backend.dto.PostResponseDTO(
+            p.id, p.title, p.content, p.viewCount, p.likeCount,
+            COUNT(c.id),
+            p.author.id, p.author.name, p.createdAt
+        )
+        FROM Post p
+        JOIN p.author a
+        LEFT JOIN Comment c ON c.post = p AND c.deletedAt IS NULL
+        WHERE p.deletedAt IS NULL
+        GROUP BY p.id, p.title, p.content, p.viewCount, p.likeCount, p.author.id, p.author.name, p.createdAt
+        ORDER BY p.likeCount DESC, p.createdAt DESC
+    """)
+    Page<PostResponseDTO> findTopNByLikeCount(Pageable pageable);
 
     // 게시글 조회 시 updated_at 변경을 막기 위해, 조회수 업데이트는 별도의 Native Query로 처리
     @Modifying // DML 쿼리임을 명시 (데이터 변경)

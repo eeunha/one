@@ -8,6 +8,8 @@ import { BoardService } from '@/services/boardService.js';
 export const useBoardStore = defineStore('post', () => {
 
     // 상태 (State): ref()를 사용하여 반응성(Reactive) 상태 정의
+    const topPosts = ref([]);   // 메인 페이지의 인기 게시글 목록 상태(List<DTO>)
+
     const posts = ref([]);           // 게시글 목록 상태 (현재 페이지의 데이터)
     const isLoading = ref(false);      // API 요청 로딩 상태 플래그
 
@@ -47,6 +49,26 @@ export const useBoardStore = defineStore('post', () => {
             console.log(`Board Store: Post ID ${postId}의 좋아요 수를 ${newLikeCount}로 업데이트합니다.`);
             // Pinia의 반응성을 이용해 직접 필드 업데이트 -> LikeButton.vue에 실시간 반영
             currentPost.value.likeCount = newLikeCount;
+        }
+    }
+
+    const fetchTop4Posts = async () => {
+        if (isLoading.value) return;
+
+        isLoading.value = true;
+        topPosts.value = []; // 기존 데이터 초기화
+
+        try {
+            const responseData = await BoardService.fetchTop4Posts();
+
+            topPosts.value = responseData;
+
+            console.log("Board Store: 인기 게시글 로드 완료", topPosts.value);
+        } catch (error) {
+            console.error('Board Store: 인기 게시글 로드 실패: ', error);
+            throw error;
+        } finally {
+            isLoading.value = false;
         }
     }
 
@@ -208,6 +230,7 @@ export const useBoardStore = defineStore('post', () => {
     };
 
     return {
+        topPosts,
         posts,
         isLoading,
         currentPost,
@@ -216,6 +239,7 @@ export const useBoardStore = defineStore('post', () => {
         postCount,
         currentPostLikeCount,
         updateLikeCount,
+        fetchTop4Posts,
         fetchPosts,
         fetchPostDetail,
         createPost,

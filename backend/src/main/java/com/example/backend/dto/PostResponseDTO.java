@@ -48,4 +48,30 @@ public class PostResponseDTO {
 
         this.createdAt = post.getCreatedAt();
     }
+
+    public PostResponseDTO(
+            Long id,           // 1. Long
+            String title,      // 2. String
+            String content,    // 3. String
+            int viewCount,     // 4. int (주의: Integer가 아닌 int)
+            int likeCount,     // 5. int (주의: Integer가 아닌 int)
+            Long commentCount, // 6. Long (COUNT 함수의 결과 타입)
+            Long authorId,     // 7. Long
+            String authorName, // 8. String
+            LocalDateTime createdAt // 9. LocalDateTime
+    ) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+
+        this.viewCount = viewCount;
+        this.likeCount = likeCount;
+
+        this.commentCount = (commentCount != null) ? commentCount.intValue() : 0;
+
+        this.authorId = authorId;
+        this.authorName = authorName;
+
+        this.createdAt = createdAt;
+    }
 }

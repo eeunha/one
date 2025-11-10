@@ -7,6 +7,17 @@ const BOARD_API_BASE_URL = '/posts'; // 백엔드 경로. board 아님!!!
  */
 export const BoardService = {
 
+    async fetchTop4Posts() {
+        try {
+            const response = await publicClient.get(`${BOARD_API_BASE_URL}/popular`);
+            return response.data;
+        } catch (error) {
+            console.error('Failed to fetch top8 posts: ', error);
+            // 호출 실패 시 오류를 던져 View에서 처리하도록 합니다.
+            throw error;
+        }
+    },
+
     /**
      * 전체 게시글 목록을 가져옵니다.
      * @returns {Promise<Array>} 게시글 목록 배열

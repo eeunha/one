@@ -6,6 +6,22 @@ import router from './router'
 import { createPinia } from 'pinia'
 import { useAuthStore } from "@/stores/useAuthStore.js";
 
+// ⭐️ Font Awesome Import 시작 ⭐️
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+
+// 사용할 아이콘들을 여기서 명시적으로 불러옵니다.
+import {
+    faHeart,   // 좋아요 (이전 fa-thumbs-up 대신 fa-heart 사용)
+    faComment, // 댓글
+    faEye,   // 조회수
+    // 만약 다른 아이콘이 필요하면 여기에 추가합니다.
+} from '@fortawesome/free-solid-svg-icons';
+
+// 라이브러리에 아이콘을 추가합니다.
+library.add(faHeart, faComment, faEye);
+// ⭐️ Font Awesome Import 끝 ⭐️
+
 const pinia = createPinia()
 const app = createApp(App)
 
@@ -32,6 +48,8 @@ async function bootstrapApp() {
 
     app.mount('#app')
 }
+
+app.component('font-awesome-icon', FontAwesomeIcon);
 
 // 명시적으로 비동기 초기화 함수를 호출합니다.
 bootstrapApp();
