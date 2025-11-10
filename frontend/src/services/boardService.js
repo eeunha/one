@@ -7,7 +7,7 @@ const BOARD_API_BASE_URL = '/posts'; // 백엔드 경로. board 아님!!!
  */
 export const BoardService = {
 
-    async fetchTop8Posts() {
+    async fetchTop4Posts() {
         try {
             const response = await publicClient.get(`${BOARD_API_BASE_URL}/popular`);
             return response.data;

@@ -13,7 +13,7 @@ const {topPosts, isLoading} = storeToRefs(boardStore);
 
 onMounted(() => {
   if (!topPosts.value.length) {
-    boardStore.fetchTop8Posts();
+    boardStore.fetchTop4Posts();
   }
 });
 
@@ -27,7 +27,7 @@ const goToBoard = () => {
     <!-- 제목 및 더보기 버튼 섹션: Flexbox로 양쪽 정렬 -->
     <div class="flex items-center justify-between mb-4 border-b-2 border-gray-500 pb-2">
       <!-- 제목 -->
-      <h2 class="text-3xl font-bold text-gray-800 pb-2">🔥 인기 게시글 Top 8</h2>
+      <h2 class="text-3xl font-bold text-gray-800 pb-2">🔥 베스트 갓생 Top 4</h2>
 
       <!-- 더보기 링크 -->
       <a
@@ -45,7 +45,7 @@ const goToBoard = () => {
     </div>
 
     <div v-else-if="topPosts.length"
-         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
 
       <TopPostItem
           v-for="post in topPosts"

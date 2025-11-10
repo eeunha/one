@@ -66,11 +66,11 @@ public class PostService {
         return postPage.map(PostResponseDTO::new);
     }
 
-    public List<PostResponseDTO> getTop8PostsForMain() {
+    public List<PostResponseDTO> getTop4PostsForMain() {
 
-        // 1. Pageable 객체 생성: 0페이지에서 8개(limit 8)만 가져오도록 설정
+        // 1. Pageable 객체 생성: 0페이지에서 4개(limit 8)만 가져오도록 설정
         // 이 Pageable이 DB 쿼리에 LIMIT 8을 적용시킵니다.
-        Pageable topN = PageRequest.of(0, 8);
+        Pageable topN = PageRequest.of(0, 4);
 
         // 2. Repository 호출 (Page<DTO> 반환)
         Page<PostResponseDTO> pageResult = postRepository.findTopNByLikeCount(topN);

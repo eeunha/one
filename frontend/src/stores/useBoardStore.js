@@ -52,14 +52,14 @@ export const useBoardStore = defineStore('post', () => {
         }
     }
 
-    const fetchTop8Posts = async () => {
+    const fetchTop4Posts = async () => {
         if (isLoading.value) return;
 
         isLoading.value = true;
         topPosts.value = []; // 기존 데이터 초기화
 
         try {
-            const responseData = await BoardService.fetchTop8Posts();
+            const responseData = await BoardService.fetchTop4Posts();
 
             topPosts.value = responseData;
 
@@ -239,7 +239,7 @@ export const useBoardStore = defineStore('post', () => {
         postCount,
         currentPostLikeCount,
         updateLikeCount,
-        fetchTop8Posts,
+        fetchTop4Posts,
         fetchPosts,
         fetchPostDetail,
         createPost,

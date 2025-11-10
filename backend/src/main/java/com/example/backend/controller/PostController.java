@@ -3,7 +3,6 @@ package com.example.backend.controller;
 import com.example.backend.dto.PostCreateRequestDTO;
 import com.example.backend.dto.PostResponseDTO;
 import com.example.backend.dto.PostUpdateRequestDTO;
-import com.example.backend.entity.Post;
 import com.example.backend.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +28,9 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping("/popular")
-    public ResponseEntity<List<PostResponseDTO>> getTop8PostsForMain() {
+    public ResponseEntity<List<PostResponseDTO>> getTop4PostsForMain() {
 
-        List<PostResponseDTO> response = postService.getTop8PostsForMain();
+        List<PostResponseDTO> response = postService.getTop4PostsForMain();
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
