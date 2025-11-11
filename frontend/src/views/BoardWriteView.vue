@@ -50,12 +50,12 @@ const handleSubmit = async () => {
 
 <template>
   <div class="container mx-auto p-4 md:p-10 max-w-4xl">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800">새 게시글 작성</h1>
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">오늘의 루틴 기록</h1>
 
     <!-- 로딩 인디케이터 -->
     <div v-if="boardStore.isLoading" class="text-center py-20">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-      <p class="mt-4 text-lg text-blue-600">게시글을 등록하는 중입니다...</p>
+      <p class="mt-4 text-lg text-blue-600">루틴을 등록하는 중입니다...</p>
     </div>
 
     <!-- 작성 폼 -->
@@ -68,7 +68,7 @@ const handleSubmit = async () => {
             v-model="postData.title"
             type="text"
             required
-            placeholder="제목을 입력하세요."
+            placeholder="[카테고리] 루틴을 한 줄로 요약해주세요. (예: [운동] 아침 푸시업 20개 성공)"
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800"
         />
       </div>
@@ -81,7 +81,7 @@ const handleSubmit = async () => {
             v-model="postData.content"
             required
             rows="10"
-            placeholder="내용을 입력하세요."
+            placeholder="루틴을 실천한 후 느낀 점, 혹은 꾸준히 할 수 있었던 나만의 노하우를 기록해보세요."
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-gray-800 resize-none"
         ></textarea>
       </div>
@@ -98,14 +98,14 @@ const handleSubmit = async () => {
             @click="router.push({ name: 'BoardList' })"
             class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-md"
         >
-          취소
+          돌아가기
         </button>
         <button
             type="submit"
             :disabled="!isFormValid || boardStore.isLoading"
             class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          등록하기
+          기록하기
         </button>
       </div>
     </form>

@@ -126,20 +126,20 @@ const getSequentialNumber = (index) => {
     <!-- 헤더 및 버튼 -->
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-extrabold text-gray-800">
-        게시판 목록 (총 {{ boardStore.postCount }}개)
+        전체 루틴 피드 (총 {{ boardStore.postCount }}개)
       </h1>
       <button
           @click="goToWrite"
-          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow-md"
+          class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow-md"
       >
-        글 작성
+        루틴 기록하기
       </button>
     </div>
 
     <!-- 로딩 상태 -->
     <div v-if="boardStore.isLoading" class="flex justify-center items-center h-48">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      <p class="ml-4 text-lg text-gray-600">게시글을 불러오는 중...</p>
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      <p class="ml-4 text-lg text-gray-600">루틴을 불러오는 중...</p>
     </div>
 
     <!-- 게시글 목록 -->
@@ -149,12 +149,12 @@ const getSequentialNumber = (index) => {
             v-for="(post, index) in boardStore.posts"
             :key="post.id"
             @click="goToDetail(post.id)"
-            class="bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition duration-300 cursor-pointer border-l-4 border-blue-500 hover:border-blue-700 flex items-center"
+            class="bg-white p-5 rounded-xl shadow-lg hover:shadow-xl transition duration-300 cursor-pointer border-l-4 border-emerald-500 hover:border-emerald-700 flex items-center"
         >
 
           <!-- 1. Left Column: Number (글번호) -->
           <div class="w-16 flex-shrink-0 text-center text-gray-500">
-            <span class="text-lg font-bold text-blue-600">
+            <span class="text-lg font-bold text-emerald-700">
               {{ getSequentialNumber(index) }}
             </span>
           </div>
@@ -174,10 +174,10 @@ const getSequentialNumber = (index) => {
 
           <!-- ⭐️ [수정] 3. Middle Column: Comment Count (댓글 수) - 게시글과 우측 정보 사이 ⭐️ -->
           <div class="hidden sm:flex w-15 flex-shrink-0 flex-col items-center justify-center text-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-600 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z" />
             </svg>
-            <span class="text-md font-semibold" :class="{'text-blue-600': post.commentCount > 0, 'text-gray-400': post.commentCount === 0}">
+            <span class="text-md font-semibold" :class="{'text-gray-600': post.commentCount > 0, 'text-gray-400': post.commentCount === 0}">
                 {{ post.commentCount || 0 }}
             </span>
           </div>
@@ -198,8 +198,8 @@ const getSequentialNumber = (index) => {
       </template>
       <!-- 게시글이 없을 경우 -->
       <div v-else class="text-center py-10 bg-white rounded-xl shadow-lg">
-        <p class="text-xl text-gray-500">아직 작성된 게시글이 없습니다.</p>
-        <p class="text-md text-gray-400 mt-2">새 글을 작성해 보세요!</p>
+        <p class="text-xl text-gray-500">아직 작성된 루틴이 없습니다.</p>
+        <p class="text-md text-gray-400 mt-2">새 루틴을 작성해 보세요!</p>
       </div>
     </div>
     <Pagination

@@ -73,7 +73,7 @@ const logout = async () => {
             isActivePath('/') ? activeClasses : inactiveClasses
         ]"
     >
-      Home
+      메인
     </RouterLink>
     <RouterLink
         to="/board"
@@ -82,7 +82,7 @@ const logout = async () => {
             isBoardActive() ? activeClasses : inactiveClasses
         ]"
     >
-      게시판
+      루틴 피드
     </RouterLink>
 
     <!-- 로그인 시에만 Profile 링크 표시 -->
@@ -94,7 +94,7 @@ const logout = async () => {
             isActivePath('/profile') ? activeClasses : inactiveClasses
         ]"
     >
-      Profile
+      나의 노트
     </RouterLink>
 
     <!-- 로그인 상태에 따른 조건부 렌더링: Login 링크 -->
@@ -113,7 +113,7 @@ const logout = async () => {
     <!-- ⭐️ [수정] ml-6 대신 justify-end를 사용하여 오른쪽 정렬을 유지하고, flex-shrink-0을 추가하여 이 영역이 좁아지지 않게 함 ⭐️ -->
     <div
         v-if="isLoggedIn"
-        class="ml-auto text-gray-600 font-medium text-sm flex items-center space-x-3 flex-shrink-0">
+        class="ml-auto pl-5 text-gray-600 font-medium text-sm flex items-center space-x-3 flex-shrink-0">
       <!-- ⭐️ [수정] 사용자 이름 텍스트도 강제 줄바꿈 방지 ⭐️ -->
       <p class="whitespace-nowrap">
         {{user.name}} 님

@@ -37,14 +37,17 @@ const handleCommentSubmitted = (message, type) => {
 <template>
   <div>
     <!-- 댓글 개수를 표시하는 제목 -->
-    <h2 class="text-2xl font-bold mb-6 mt-8 text-gray-800 border-b pb-3">
-      댓글 ({{ commentStore.commentCount }})
+    <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+      응원과 질문 ({{ commentStore.commentCount }})
     </h2>
+
+    <!-- ⭐️ 댓글 작성 폼 배치 (목록 위에 위치) ⭐️ -->
+    <CommentForm @comment-submitted="handleCommentSubmitted" />
 
     <!-- 로딩 상태 -->
     <div v-if="commentStore.isLoading && commentStore.commentCount === 0" class="text-center py-5">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-      <p class="mt-2 text-gray-600">댓글을 불러오는 중...</p>
+      <p class="mt-2 text-gray-600">응원과 질문을 불러오는 중...</p>
     </div>
 
     <!-- 에러 상태 -->
@@ -54,7 +57,7 @@ const handleCommentSubmitted = (message, type) => {
 
     <!-- 빈 목록 상태 -->
     <div v-else-if="commentStore.commentCount === 0" class="text-center py-5 text-gray-500">
-      등록된 댓글이 없습니다. 첫 댓글을 작성해보세요!
+      아직 소통이 없어요. 첫 질문이나 응원의 메시지를 남겨보세요!
     </div>
 
     <!-- 댓글 목록 -->
@@ -67,8 +70,5 @@ const handleCommentSubmitted = (message, type) => {
           @comment-submitted="handleCommentSubmitted"
       />
     </div>
-
-    <!-- ⭐️ 댓글 작성 폼 배치 (목록 위에 위치) ⭐️ -->
-    <CommentForm @comment-submitted="handleCommentSubmitted" />
   </div>
 </template>

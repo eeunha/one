@@ -54,12 +54,11 @@ const emit = defineEmits('comment-submitted');
 </script>
 
 <template>
-  <div class="mb-8">
-    <h3 class="text-lg font-semibold mb-3 mt-6 text-gray-700">댓글 작성</h3>
+  <div class="mb-6 mt-6">
 
     <!-- 비로그인 상태 안내 -->
-    <div v-if="!isAuthenticated" class="p-4 bg-gray-100 border border-gray-300 rounded-lg text-center text-gray-600">
-      댓글을 작성하려면 로그인해주세요.
+    <div v-if="!isAuthenticated" class="p-4 mt-6 bg-gray-100 border border-gray-300 rounded-lg text-center text-gray-600">
+      응원/질문을 작성하려면 로그인해주세요.
     </div>
 
     <!-- 로그인 상태 - 댓글 폼 -->
@@ -67,7 +66,7 @@ const emit = defineEmits('comment-submitted');
         <textarea
             v-model="newCommentContent"
             rows="4"
-            :placeholder="`댓글을 입력하세요. (${authorName}님으로 작성)`"
+            :placeholder="`궁금한 점을 질문하거나, 응원의 메시지를 남겨보세요!`"
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-150 resize-none text-gray-800"
             :disabled="commentStore.isLoading"
         ></textarea>
@@ -80,7 +79,7 @@ const emit = defineEmits('comment-submitted');
             :disabled="!isFormValid || commentStore.isLoading"
             class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-lg transition duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {{ commentStore.isLoading ? '등록 중...' : '댓글 등록' }}
+          {{ commentStore.isLoading ? '등록 중...' : '등록하기' }}
         </button>
       </div>
     </div>

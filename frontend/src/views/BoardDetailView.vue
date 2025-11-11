@@ -213,12 +213,12 @@ const handleLikeConfirm = async () => {
     <div class="container mx-auto p-4 md:p-10 max-w-4xl">
       <div v-if="boardStore.isLoading" class="text-center py-20">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-        <p class="mt-4 text-lg text-gray-600">게시글을 불러오는 중...</p>
+        <p class="mt-4 text-lg text-gray-600">루틴을 불러오는 중...</p>
       </div>
 
       <!-- 게시글을 찾을 수 없는 경우를 postNotFound로 처리 -->
       <div v-else-if="postNotFound" class="text-center py-20 bg-white rounded-xl shadow-lg">
-        <p class="text-2xl text-red-500 font-bold">게시글을 찾을 수 없거나 삭제되었습니다.</p>
+        <p class="text-2xl text-red-500 font-bold">루틴을 찾을 수 없거나 삭제되었습니다.</p>
         <button
             @click="router.push({ name: 'BoardList' })"
             class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg transition duration-200 shadow"
@@ -273,22 +273,22 @@ const handleLikeConfirm = async () => {
           <div v-if="isAuthor" class="space-x-2">
             <button
                 @click="handleEditPost"
-                class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
+                class="bg-emerald-500 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
             >
-              수정
+              수정하기
             </button>
             <button
                 @click="handleDeletePost"
-                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
+                class="bg-rose-500 hover:bg-rose-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
             >
-              삭제
+              삭제하기
             </button>
           </div>
         </footer>
       </div>
 
       <!-- ⭐️ 2. 댓글 섹션 통합 (CommentList 컴포넌트 추가) ⭐️ -->
-      <div class="mt-10">
+      <div class="mt-15">
         <CommentList
             :post-id="postId"
             @open-delete-modal="handleOpenCommentDeleteModal"
@@ -300,8 +300,8 @@ const handleLikeConfirm = async () => {
     <!-- 커스텀 모달 컴포넌트 연결 -->
     <ConfirmationModal
         :show="isPostDeleteModalOpen"
-        :title="'게시글 삭제 확인'"
-        :message="'정말로 이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다.'"
+        :title="'루틴 삭제 확인'"
+        :message="'정말로 이 루틴을 삭제하시겠습니까? 삭제된 루틴은 복구할 수 없습니다.'"
         :is-loading="boardStore.isLoading"
         :error="postDeleteError"
         @update:show="isPostDeleteModalOpen = $event"
