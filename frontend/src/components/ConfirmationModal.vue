@@ -79,7 +79,7 @@ onUnmounted(() => {
   <!-- 모달 오버레이 -->
   <div
       v-if="show"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity"
+      class="fixed inset-0 backdrop-brightness-40 flex items-center justify-center z-50 transition-opacity"
       @click.self="close"
   >
     <!-- 모달 컨테이너 -->
