@@ -96,11 +96,11 @@ const handleWithdrawalConfirm = async () => {
       @update:show="showWithdrawalModal = $event"
       @confirm="handleWithdrawalConfirm"
 
-      title="경고: 회원 탈퇴"
+      title="회원 탈퇴 확인"
       message="정말로 계정을 탈퇴하시겠습니까? 탈퇴 후에는 계정을 복구할 수 없으며, 작성하신 루틴과 응원/질문은 익명 처리됩니다."
       :is-loading="isProcessing"
       :error="withdrawalError"
-      confirm-button-text="탈퇴 확인"
+      confirm-button-text="탈퇴하기"
       confirm-button-class="bg-red-600 hover:bg-red-700"
   />
 </template>

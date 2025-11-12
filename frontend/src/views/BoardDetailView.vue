@@ -305,6 +305,7 @@ const handleLikeConfirm = async () => {
         :is-loading="boardStore.isLoading"
         :error="postDeleteError"
         @update:show="isPostDeleteModalOpen = $event"
+        :confirmButtonText="'삭제하기'"
         @confirm="confirmDeletePost"
     />
 
@@ -316,6 +317,7 @@ const handleLikeConfirm = async () => {
         :is-loading="commentStore.isLoading"
         :error="commentDeleteError"
         @update:show="isCommentDeleteModalOpen = $event"
+        :confirmButtonText="'삭제하기'"
         @confirm="confirmDeleteComment"
     />
 
@@ -332,7 +334,7 @@ const handleLikeConfirm = async () => {
       @update:show="showLikeModal = $event"
       @confirm="handleLikeConfirm"
 
-      title="경고: 로그인 필요"
+      title="로그인 필요"
       message="좋아요를 누르려면 로그인이 필요합니다."
       :is-loading="isProcessing"
       :error="likeError"
