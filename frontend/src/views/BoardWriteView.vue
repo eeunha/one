@@ -41,7 +41,7 @@ const handleSubmit = async () => {
     }
   } catch (error) {
     // API 호출 실패 시 에러 메시지 표시 (백엔드에서 받은 메시지 우선 사용)
-    const message = error.response?.data?.message || '게시글 작성 중 오류가 발생했습니다.';
+    const message = error.response?.data?.message || '루틴 작성 중 오류가 발생했습니다.';
     errorMessage.value = message;
     console.error('Submission Error: ', error);
   }
@@ -96,23 +96,18 @@ const handleSubmit = async () => {
         <button
             type="button"
             @click="router.push({ name: 'BoardList' })"
-            class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-md"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition duration-200 shadow-md"
         >
-          돌아가기
+          취소하기
         </button>
         <button
             type="submit"
             :disabled="!isFormValid || boardStore.isLoading"
-            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
           기록하기
         </button>
       </div>
     </form>
-
-<!--    <div class="mt-8 p-4 border rounded-lg bg-green-50 text-green-700">-->
-<!--      <h2 class="font-bold text-xl">안내</h2>-->
-<!--      <p class="mt-2">이 페이지는 <span class="font-mono bg-green-200 px-1 rounded">requiresAuth: true</span> 메타 태그로 보호되어 있습니다. (src/router/index.js)</p>-->
-<!--    </div>-->
   </div>
 </template>

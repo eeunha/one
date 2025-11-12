@@ -83,13 +83,13 @@ onUnmounted(() => {
       @click.self="close"
   >
     <!-- 모달 컨테이너 -->
-    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm transform transition-all duration-300 scale-100 opacity-100">
+    <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-100 opacity-100">
 
       <!-- 제목 -->
       <h2 class="text-xl font-bold mb-4 text-gray-900">{{ title }}</h2>
 
       <!-- 메시지 -->
-      <p class="mb-6 text-gray-700">{{ message }}</p>
+      <p class="mb-6 text-gray-700 break-words">{{ message }}</p>
 
       <!-- 에러 메시지 -->
       <p v-if="error" class="text-red-500 text-sm mb-4 font-medium bg-red-50 p-2 rounded border border-red-200">

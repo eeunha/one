@@ -18,11 +18,11 @@ const isFormValid = computed(() => newCommentContent.value.trim().length > 0);
 
 const handleSubmitComment = async () => {
   if (!isAuthenticated.value) {
-    commentError.value = '로그인 후 댓글을 작성할 수 있습니다.';
+    commentError.value = '로그인 후 응원/질문을 작성할 수 있습니다.';
     return;
   }
   if (!isFormValid.value) {
-    commentError.value = '댓글 내용을 입력해주세요.';
+    commentError.value = '응원/질문 내용을 입력해주세요.';
     return;
   }
 
@@ -37,10 +37,10 @@ const handleSubmitComment = async () => {
     newCommentContent.value = '';
 
     // 댓글 작성 성공 토스트 메시지를 부모에게 전달합니다. (BoardDetail.vue에서 수신)
-    emit('comment-submitted', '댓글이 성공적으로 작성되었습니다.', 'success');
+    emit('comment-submitted', '응원/질문이 성공적으로 작성되었습니다.', 'success');
   } catch (err) {
     // Store에서 발생한 오류 메시지 사용
-    commentError.value = commentStore.error || '댓글 작성 중 알 수 없는 오류가 발생했습니다.';
+    commentError.value = commentStore.error || '응원/질문 작성 중 알 수 없는 오류가 발생했습니다.';
     console.error('댓글 작성 오류: ', err);
 
     // 실패 토스트 메시지를 부모에게 전달합니다.
@@ -77,7 +77,7 @@ const emit = defineEmits('comment-submitted');
         <button
             @click="handleSubmitComment"
             :disabled="!isFormValid || commentStore.isLoading"
-            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-lg transition duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-5 rounded-lg transition duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {{ commentStore.isLoading ? '등록 중...' : '등록하기' }}
         </button>

@@ -41,7 +41,7 @@ const goToBoard = () => {
     </div>
 
     <div v-if="isLoading" class="text-center text-gray-500 py-10">
-      게시글을 불러오는 중입니다...
+      베스트 갓생 Top4를 불러오는 중입니다...
     </div>
 
     <div v-else-if="topPosts.length"
@@ -55,7 +55,7 @@ const goToBoard = () => {
     </div>
 
     <div v-else class="text-center text-gray-500 py-10 border-2 border-dashed border-gray-300 rounded-lg">
-      아직 인기 게시글이 없습니다.
+      아직 베스트 갓생 Top4가 없습니다.
     </div>
   </div>
 </template>

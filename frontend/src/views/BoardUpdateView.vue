@@ -167,14 +167,14 @@ const handleSubmit = async () => {
         <button
             type="button"
             @click="router.push({ name: 'BoardDetail', params: { id: id } })"
-            class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-md"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg transition duration-200 shadow-md"
         >
-          돌아가기
+          취소하기
         </button>
         <button
             type="submit"
             :disabled="!isFormValid || boardStore.isLoading"
-            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
           수정하기
         </button>

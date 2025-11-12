@@ -80,7 +80,7 @@ const handleWithdrawalConfirm = async () => {
       </div>
       <button
           @click="logout"
-          class="mt-6 w-full py-2 px-4 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 transition duration-300"
+          class="mt-6 w-full py-2 px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 transition duration-300"
       >
         로그아웃
       </button>
@@ -97,7 +97,7 @@ const handleWithdrawalConfirm = async () => {
       @confirm="handleWithdrawalConfirm"
 
       title="경고: 회원 탈퇴"
-      message="정말로 계정을 탈퇴하시겠습니까? 탈퇴 후에는 계정을 복구할 수 없으며, 작성하신 게시글과 댓글은 익명 처리됩니다."
+      message="정말로 계정을 탈퇴하시겠습니까? 탈퇴 후에는 계정을 복구할 수 없으며, 작성하신 루틴과 응원/질문은 익명 처리됩니다."
       :is-loading="isProcessing"
       :error="withdrawalError"
       confirm-button-text="탈퇴 확인"

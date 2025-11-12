@@ -129,7 +129,7 @@ const confirmDeletePost = async () => {
 
     // 2. ⭐️ [핵심] 토스트 메시지 상태를 Pinia Store에 저장하고 이동합니다. ⭐️
     // BoardList.vue에서 이 상태를 확인하고 토스트를 띄웁니다.
-    boardStore.setTransientToast('게시글이 성공적으로 삭제되었습니다.', 'success');
+    boardStore.setTransientToast('루틴이 성공적으로 삭제되었습니다.', 'success');
 
     // 3. 목록으로 이동
     router.push({name: 'BoardList'});
@@ -138,10 +138,10 @@ const confirmDeletePost = async () => {
 
   } catch (error) {
     // 3. 삭제 실패: 에러 메시지를 모달에 표시
-    const errorMessage = error.response?.data?.message || "게시글 삭제에 실패했습니다. 권한을 확인해 주세요.";
+    const errorMessage = error.response?.data?.message || "루틴 삭제에 실패했습니다. 권한을 확인해 주세요.";
     postDeleteError.value = errorMessage;
 
-    console.error("삭제 실패:", error);
+    console.error("게시글 삭제 실패:", error);
   }
 };
 
@@ -163,11 +163,11 @@ const confirmDeleteComment = async () => {
     isCommentDeleteModalOpen.value = false;
     commentToDeleteId.value = null;
 
-    showToast('댓글이 성공적으로 삭제되었습니다.', 'success');
+    showToast('응원/질문이 성공적으로 삭제되었습니다.', 'success');
 
   } catch (error) {
     // 삭제 실패 시 모달에 에러 표시
-    const errorMessage = commentStore.error || "댓글 삭제에 실패했습니다. 권한을 확인해 주세요.";
+    const errorMessage = commentStore.error || "응원/질문 삭제에 실패했습니다. 권한을 확인해 주세요.";
     commentDeleteError.value = errorMessage;
     console.error("댓글 삭제 실패:", error);
   }
@@ -273,13 +273,13 @@ const handleLikeConfirm = async () => {
           <div v-if="isAuthor" class="space-x-2">
             <button
                 @click="handleEditPost"
-                class="bg-emerald-500 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
+                class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
             >
               수정하기
             </button>
             <button
                 @click="handleDeletePost"
-                class="bg-rose-500 hover:bg-rose-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
+                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow"
             >
               삭제하기
             </button>
@@ -311,8 +311,8 @@ const handleLikeConfirm = async () => {
     <!-- 2. ⭐️ 댓글 삭제 커스텀 모달 컴포넌트 ⭐️ -->
     <ConfirmationModal
         :show="isCommentDeleteModalOpen"
-        :title="'댓글 삭제 확인'"
-        :message="'정말로 이 댓글을 삭제하시겠습니까? 삭제된 댓글은 복구할 수 없습니다.'"
+        :title="'응원/질문 삭제 확인'"
+        :message="'정말로 이 응원/질문을 삭제하시겠습니까? 삭제된 응원/질문은 복구할 수 없습니다.'"
         :is-loading="commentStore.isLoading"
         :error="commentDeleteError"
         @update:show="isCommentDeleteModalOpen = $event"

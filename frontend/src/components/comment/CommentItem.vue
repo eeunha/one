@@ -57,7 +57,7 @@ const saveEdit = async () => {
 
   // 2. 유효성 검사 (빈 내용 방지)
   if (editContent.value.trim().length === 0) {
-    editError.value = '댓글 내용을 입력해주세요.';
+    editError.value = '응원/질문 내용을 입력해주세요.';
     return;
   }
 
@@ -67,10 +67,10 @@ const saveEdit = async () => {
     editError.value = null;
 
     // 부모에게 성공 알림을 보냅니다. (BoardDetail의 Toast를 사용하기 위함)
-    emit('comment-submitted', '댓글이 성공적으로 수정되었습니다.', 'success');
+    emit('comment-submitted', '응원/질문이 성공적으로 수정되었습니다.', 'success');
   } catch (err) {
     // Store에서 발생한 오류 메시지 사용
-    editError.value = commentStore.error || '댓글 수정에 실패했습니다.';
+    editError.value = commentStore.error || '응원/질문 수정에 실패했습니다.';
     console.error('댓글 수정 오류:', err);
 
     // 실패 토스트 메시지를 부모에게 전달
@@ -99,17 +99,17 @@ const openDeleteModal = () => {
       <div v-if="isCommentAuthor && !isEditing" class="flex space-x-1">
         <button
             @click="startEdit"
-            class="text-blue-500 hover:text-blue-700 text-xs font-medium transition duration-150 px-2 py-1 rounded-full"
-            title="댓글 수정"
+            class="text-emerald-500 hover:text-emerald-600 text-xs font-medium transition duration-150 px-2 py-1 rounded-full"
+            title="응원/질문 수정"
         >
-          수정
+          수정하기
         </button>
         <button
             @click="openDeleteModal"
-            class="text-red-500 hover:text-red-700 text-xs font-medium transition duration-150 px-2 py-1 rounded-full"
-            title="댓글 삭제"
+            class="text-red-500 hover:text-red-600 text-xs font-medium transition duration-150 px-2 py-1 rounded-full"
+            title="응원/질문 삭제"
         >
-          삭제
+          삭제하기
         </button>
       </div>
     </div>
@@ -124,7 +124,7 @@ const openDeleteModal = () => {
         <textarea
             v-model="editContent"
             rows="3"
-            class="w-full px-3 py-2 border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-150 resize-none text-gray-800"
+            class="w-full px-3 py-2 border border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-150 resize-none text-gray-800"
             :disabled="commentStore.isLoading"
         ></textarea>
 
@@ -133,17 +133,17 @@ const openDeleteModal = () => {
       <div class="flex justify-end space-x-2">
         <button
             @click="cancelEdit"
-            class="bg-gray-400 hover:bg-gray-500 text-white text-sm py-1 px-3 rounded-lg transition duration-200"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm py-1 px-3 rounded-lg transition duration-200"
             :disabled="commentStore.isLoading"
         >
-          취소
+          취소하기
         </button>
         <button
             @click="saveEdit"
             :disabled="commentStore.isLoading || editContent.trim().length === 0"
-            class="bg-blue-600 hover:bg-blue-700 text-white text-sm py-1 px-3 rounded-lg transition duration-200 disabled:opacity-50"
+            class="bg-emerald-500 hover:bg-emerald-600 text-white text-sm py-1 px-3 rounded-lg transition duration-200 disabled:opacity-50"
         >
-          저장
+          수정하기
         </button>
       </div>
     </div>
